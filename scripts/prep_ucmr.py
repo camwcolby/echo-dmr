@@ -65,13 +65,17 @@ def main(src: str) -> None:
         parts.append(chunk)
         print(f"  {n:,} rows", end="\r")
     df = pd.concat(parts, ignore_index=True)
-    for c in ("PWSID", "State", "Contaminant", "Units", "AnalyticalResultsSign", "Size",
+    df["PWSID"] = df["PWSID"].str.strip()
+    for c in ("State", "Contaminant", "Units", "AnalyticalResultsSign", "Size",
               "FacilityWaterType", "SamplePointType", "SampleEventCode"):
         if c in df:
             df[c] = df[c].str.strip().astype("category")
-    df = df.sort_values("PWSID")
+    # PWSID stays plain text, sorted, in small row groups: a lookup then reads only the one
+    # group holding that system (~40 MB) instead of the whole file (~600 MB), which keeps the
+    # app inside a 512 MB host.
+    df = df.sort_values("PWSID", kind="stable")
     OUT.parent.mkdir(exist_ok=True)
-    df.to_parquet(OUT, index=False, compression="zstd", row_group_size=50_000)
+    df.to_parquet(OUT, index=False, compression="zstd", row_group_size=10_000)
     print(f"\nWrote {len(df):,} rows, {df['PWSID'].nunique():,} systems -> {OUT} "
           f"({OUT.stat().st_size / 1e6:.1f} MB)")
 

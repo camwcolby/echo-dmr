@@ -1,0 +1,16 @@
+# Render blueprint: New > Blueprint > pick this repo > Apply.
+# Free plan: 512 MB RAM, sleeps after 15 min idle, ~1 min to wake on the next visit.
+services:
+  - type: web
+    name: pursuit-compliance-recon
+    runtime: python
+    plan: free
+    autoDeploy: true
+    buildCommand: pip install -r requirements.txt
+    startCommand: >-
+      streamlit run streamlit_app.py --server.port $PORT --server.address 0.0.0.0
+      --server.headless true --browser.gatherUsageStats false
+    healthCheckPath: /_stcore/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.8
