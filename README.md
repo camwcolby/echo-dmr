@@ -78,3 +78,21 @@ Host it so others can use it (Streamlit Community Cloud, free):
 
 Notes: the free tier allows one private app per account. Apps sleep after 12 hours with no
 visitors; the next visitor clicks to wake it (about 30 seconds). Pushing to GitHub redeploys.
+
+## Drinking water mode
+Switch to **Drinking water (PWSID)** at the top of the app. Type a PWSID (or search by name) and get:
+- **Violations**: every federal SDWIS violation on a timeline, health-based vs monitoring/reporting.
+- **Lead & copper**: 90th percentile results vs the federal action levels.
+- **Sample results (state)**: every chem/rad sample result from the state's Drinking Water Watch
+  site, one chart per analyte vs the federal MCL, with running annual averages where the rule
+  averages. Works for states listed in `echo_pull/dw/dww.py`; check them with
+  `python scripts/probe_states.py` (writes probe_report.csv).
+- **PFAS (UCMR 5)**: UCMR 5 results vs the 2024 PFAS MCLs and hazard index, with the status of
+  EPA's May 2026 proposals. Needs the one-time prep below.
+- **Standards**: the federal values the charts compare against (40 CFR 141).
+
+### One-time UCMR prep
+1. Download "UCMR 5 Occurrence Data Text Files" (ucmr5-occurrence-data.zip) from
+   https://www.epa.gov/dwucmr/occurrence-data-unregulated-contaminant-monitoring-rule
+2. `python scripts/prep_ucmr.py "C:\Users\you\Downloads\ucmr5-occurrence-data.zip"`
+3. `git add data_static/ucmr5_slim.parquet`, commit, push. The web app picks it up on redeploy.
