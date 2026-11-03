@@ -1,138 +1,81 @@
-"""Diagnose automated access to Tennessee's Tableau 'Drinking Water Watch' (Chem/Rad page).
+"""Probe Tennessee's Tableau 'Drinking Water Watch' end to end.
 
-    python scripts/probe_tn.py            (no arguments needed)
+    python scripts/probe_tn.py            (no arguments needed; optional PWSID, e.g. TN0000002)
 
-Newer Tableau Server (2023+) no longer puts the session config in the page; the browser fetches
-it from .../startSession/viewing. This probe does that, then hands the config to tableauscraper
-to open the data session, pick one system, and save every table.
-Send the printed output plus everything in tn_probe/ back.
+Saves everything in tn_probe/. Send the printed output and the tn_probe folder back.
 """
 from __future__ import annotations
 
 import json
 import re
 import sys
+import traceback
 from pathlib import Path
-from urllib.parse import urlparse
 
-import requests
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-HOST = "https://data.tn.gov"
-SITE, WORKBOOK, VIEW_NAME = "Public", "TNDrinkingWaterWatch", "ChemRad_page"
-VIEW = f"{HOST}/t/{SITE}/views/{WORKBOOK}/{VIEW_NAME}"
-VIZQL = f"/vizql/t/{SITE}/w/{WORKBOOK}/v/{VIEW_NAME}"
+from echo_pull.dw import tn_tableau as TN  # noqa: E402
+
 PWSID = (sys.argv[1] if len(sys.argv) > 1 else "TN0000002").upper()
-FILTER = "Water System Name & No."
 OUT = Path("tn_probe")
 OUT.mkdir(exist_ok=True)
-UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-      "(KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36")
-EMBED = {":embed": "y", ":showVizHome": "no"}
 
 
-def new_session():
-    s = requests.Session()
-    s.headers.update({"User-Agent": UA, "Accept-Language": "en-US,en;q=0.9"})
-    return s
-
-
-def get_config(s):
-    print("\n=== Step A: load page, then ask for the session config ===")
-    r = s.get(VIEW, params=EMBED, timeout=60)
-    print(f"  page: HTTP {r.status_code}; cookies: {sorted(s.cookies.keys())}")
-    m = re.search(r'id="tsConfigContainer"[^>]*>(.*?)</textarea>', r.text, re.S)
-    if m and m.group(1).strip():
-        print("  config was in the page (older Tableau style)")
-        return json.loads(m.group(1))
-    attempts = [
-        ("POST", f"{HOST}{VIZQL}/startSession/viewing", EMBED),
-        ("POST", f"{HOST}{VIZQL}/startSession/viewing", {}),
-        ("GET", f"{HOST}{VIZQL}/startSession/viewing", EMBED),
-    ]
-    hdr = {"Accept": "application/json, text/javascript, */*; q=0.01",
-           "X-Requested-With": "XMLHttpRequest", "Referer": r.url,
-           "Origin": HOST}
-    for i, (method, url, params) in enumerate(attempts, 1):
-        try:
-            resp = s.request(method, url, params=params, headers=hdr, timeout=60)
-        except requests.RequestException as e:
-            print(f"  try {i} {method} startSession: {type(e).__name__}")
-            continue
-        (OUT / f"start_{i}.txt").write_text(resp.text, encoding="utf-8")
-        print(f"  try {i} {method} startSession params={params}: HTTP {resp.status_code}, "
-              f"{len(resp.text):,} chars, starts: {resp.text[:120]!r}")
-        try:
-            cfg = resp.json()
-        except ValueError:
-            continue
-        if isinstance(cfg, dict) and cfg.get("sessionid"):
-            print("  session config OK. keys:", sorted(cfg)[:20])
-            print("  vizql_root:", cfg.get("vizql_root"), " sheetId:", cfg.get("sheetId"))
-            (OUT / "config.json").write_text(json.dumps(cfg, indent=1), encoding="utf-8")
-            return cfg
-    return None
-
-
-def run_scraper(cfg, s):
-    print("\n=== Step B: open data session, pick the system, read tables ===")
+def main():
+    print("=== 1. session + bootstrap (Chem/Rad page) ===")
     try:
-        from tableauscraper import TableauScraper
-    except ImportError:
-        print("  python -m pip install tableauscraper")
-        return
-    ts = TableauScraper()
-    ts.session = s
-    fake_page = f'<textarea id="tsConfigContainer">{json.dumps(cfg)}</textarea>'
-    real_get = s.get
-
-    def get(url, *a, **k):          # hand tableauscraper the config it expects in the page
-        if urlparse(url).path.rstrip("/").endswith(VIEW_NAME):
-            resp = requests.Response()
-            resp.status_code, resp._content, resp.url = 200, fake_page.encode(), url
-            resp.encoding = "utf-8"
-            return resp
-        return real_get(url, *a, **k)
-
-    s.get = get
-    try:
-        ts.loads(VIEW)
+        ts = TN.scraper_for("ChemRad_page", debug_dir=OUT)
     except Exception as e:  # noqa: BLE001
-        print(f"  bootstrap failed: {type(e).__name__}: {str(e)[:300]}")
+        print(f"  FAILED: {type(e).__name__}: {str(e)[:400]}")
+        traceback.print_exc(limit=3)
+        print("  (tn_probe/bootstrap.txt has the raw server reply, if it got that far)")
         return
     wb = ts.getWorkbook()
     print("  worksheets:", [w.name for w in wb.worksheets])
-    for ws in wb.worksheets:
-        print(f"   '{ws.name}': {ws.data.shape[0]} rows; columns {list(ws.data.columns)[:12]}")
-    for ws in wb.worksheets:
+    for w in wb.worksheets:
         try:
-            filters = ws.getFilters()
+            fl = w.getFilters()
         except Exception:  # noqa: BLE001
-            continue
-        for f in filters:
-            if f.get("column") != FILTER:
-                continue
-            vals = [v for v in f.get("values", []) if str(v).startswith(PWSID)]
-            print(f"  filter '{FILTER}' on '{ws.name}': {len(f.get('values', []))} systems; "
-                  f"match: {vals[:1]}")
-            if not vals:
-                return
-            wb2 = ws.setFilter(FILTER, vals[0])
-            for w2 in wb2.worksheets:
-                print(f"   after: '{w2.name}': {w2.data.shape[0]} rows; "
-                      f"columns {list(w2.data.columns)[:15]}")
-                if len(w2.data):
-                    safe = re.sub(r"[^A-Za-z0-9]+", "_", w2.name)[:50]
-                    w2.data.to_csv(OUT / f"after_{safe}.csv", index=False)
-            print("  saved tn_probe/after_*.csv")
-            return
-    print("  no 'Water System Name & No.' filter found on any sheet")
+            fl = []
+        print(f"   '{w.name}': {w.data.shape[0]} rows; filters: "
+              f"{[(f.get('column'), len(f.get('values', []))) for f in fl]}")
+
+    print(f"\n=== 2. pick {PWSID} ===")
+    ws, val, f = TN.system_filter_value(ts, PWSID)
+    print(f"  filter sheet: {getattr(ws, 'name', None)}; value: {val}")
+    if not val:
+        return
+    wb2 = ws.setFilter(TN.SYSTEM_FILTER, val)
+    for w in wb2.worksheets:
+        print(f"   after: '{w.name}': {w.data.shape[0]} rows; columns {list(w.data.columns)[:14]}")
+        if len(w.data):
+            w.data.to_csv(OUT / f"after_{re.sub(r'[^A-Za-z0-9]+', '_', w.name)[:50]}.csv", index=False)
+
+    print("\n=== 3. widen 'Type' to all sample types (dashboard default is Routine only) ===")
+    for w in wb2.worksheets:
+        try:
+            for fl in w.getFilters():
+                if fl.get("column", "").lower() == "type":
+                    print(f"   Type values: {fl.get('values')}")
+                    wb3 = w.setFilter("Type", fl.get("values"))
+                    print("   set Type to all values:",
+                          [(x.name, x.data.shape[0]) for x in wb3.worksheets])
+                    raise StopIteration
+        except StopIteration:
+            break
+        except Exception as e:  # noqa: BLE001
+            print(f"   Type filter on '{w.name}': {type(e).__name__}: {str(e)[:150]}")
+
+    print("\n=== 4. Export -> CSV (crosstab) ===")
+    try:
+        df, sheet = TN.export_crosstab(ts)
+        df.to_csv(OUT / "export_crosstab.csv", index=False)
+        print(f"  exported sheet '{sheet}': {len(df)} rows; columns {list(df.columns)}")
+        print(df.head(8).to_string())
+    except Exception as e:  # noqa: BLE001
+        print(f"  export FAILED: {type(e).__name__}: {str(e)[:300]}")
+    print("\nDone. Send this output and the tn_probe folder.")
 
 
 if __name__ == "__main__":
-    s = new_session()
-    cfg = get_config(s)
-    if cfg:
-        run_scraper(cfg, s)
-    else:
-        print("\n  No session config. The start_*.txt files show what the server said.")
-    print("\nDone. Send this output and everything in tn_probe/.")
+    main()

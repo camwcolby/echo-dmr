@@ -1,13 +1,14 @@
-# Pinned to the versions the app was tested with. Change deliberately, not by redeploy accident:
-# a Streamlit version change ships new front-end files, and open browser tabs need a hard refresh.
+# Streamlit is pinned exactly: a version change ships new front-end files and open tabs then need
+# a hard refresh. Everything else uses minimum versions so Streamlit Cloud can pick builds that
+# match whichever Python version the app runs on.
 streamlit==1.66.1
-pandas==3.0.5
-numpy==2.5.3
-plotly==7.1.0
-requests==2.34.2
-beautifulsoup4==4.15.0
-lxml==6.1.3
-pyarrow==26.0.0
-duckdb==1.5.6
-openpyxl==3.1.5
-pytest>=8.0
+pandas>=2.1
+numpy>=1.26
+plotly>=5.20
+requests>=2.31
+beautifulsoup4>=4.12
+lxml>=4.9
+pyarrow>=14
+duckdb>=1.0
+openpyxl>=3.1
+tableauscraper>=0.1.29
