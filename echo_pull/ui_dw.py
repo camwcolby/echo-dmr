@@ -238,6 +238,11 @@ def render():
                 if not res.empty:
                     d = DV.prepare_results(res)
                     panels = DV.analyte_panels(d)
+                    # x axis: the chosen sample-history window, trimmed to where results start
+                    w0 = pd.Timestamp(date.today() - timedelta(days=365 * req[1]))
+                    d0 = d["collected"].min() if "collected" in d else pd.NaT
+                    s_range = [max(w0, d0 - pd.Timedelta(days=45)) if pd.notna(d0) else w0,
+                               x_range[1]]
                     st.caption("One chart per analyte that has a federal standard, highest "
                                "% of standard first. Blue: detected result. Hollow grey: non-detect "
                                "at its reporting level. Bold blue line: running annual average "
@@ -252,7 +257,7 @@ def render():
                                 st.markdown(f"**{_nice(r['analyte'])}**  \n"
                                             f"{r['std_kind']} {V._fmt(r['std_value'], r['std_unit'])}"
                                             f" · {DV.BASIS_TEXT.get(r['std_basis'], '')}")
-                                st.plotly_chart(DV.analyte_panel(d, r, x_range), config=PLOT_CFG,
+                                st.plotly_chart(DV.analyte_panel(d, r, s_range), config=PLOT_CFG,
                                                 theme="streamlit", width="stretch", key=f"dwa{k}")
                                 mp = r["max_pct"]
                                 st.caption(f"{r['samples']} results, {r['detects']} detected"

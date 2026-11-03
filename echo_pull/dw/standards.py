@@ -60,7 +60,7 @@ STANDARDS: list[Standard] = [
     # ---- radionuclides (141.66)
     S("gross_alpha", r"gross alpha", 15, "pCi/L", "MCL", "RAA", "Radionuclide", cite="40 CFR 141.66"),
     S("radium", r"combined radium|radium.*226.*228", 5, "pCi/L", "MCL", "RAA", "Radionuclide", cite="40 CFR 141.66"),
-    S("uranium", r"^uranium", 0.030, "mg/L", "MCL", "RAA", "Radionuclide", cite="40 CFR 141.66"),
+    S("uranium", r"^(combined )?uranium", 0.030, "mg/L", "MCL", "RAA", "Radionuclide", cite="40 CFR 141.66"),
     # ---- volatile organics (141.61(a))
     S("benzene", r"^benzene$", 0.005, "mg/L", "MCL", "RAA", "VOC", cite="40 CFR 141.61"),
     S("carbon_tet", r"carbon tetrachloride", 0.005, "mg/L", "MCL", "RAA", "VOC", cite="40 CFR 141.61"),
@@ -68,10 +68,10 @@ STANDARDS: list[Standard] = [
     S("o_dcb", r"(o-|1,2-)dichlorobenzene", 0.6, "mg/L", "MCL", "RAA", "VOC", cite="40 CFR 141.61"),
     S("p_dcb", r"(p-|1,4-)dichlorobenzene", 0.075, "mg/L", "MCL", "RAA", "VOC", cite="40 CFR 141.61"),
     S("dca12", r"1,2-dichloroethane", 0.005, "mg/L", "MCL", "RAA", "VOC", cite="40 CFR 141.61"),
-    S("dce11", r"1,1-dichloroethylene", 0.007, "mg/L", "MCL", "RAA", "VOC", cite="40 CFR 141.61"),
+    S("dce11", r"1,1-dichloroethylene|1,1-dichloroethene", 0.007, "mg/L", "MCL", "RAA", "VOC", cite="40 CFR 141.61"),
     S("cis_dce", r"cis-1,2-dichloroethylene", 0.07, "mg/L", "MCL", "RAA", "VOC", cite="40 CFR 141.61"),
     S("trans_dce", r"trans-1,2-dichloroethylene", 0.1, "mg/L", "MCL", "RAA", "VOC", cite="40 CFR 141.61"),
-    S("dcm", r"(dichloromethane|methylene chloride)", 0.005, "mg/L", "MCL", "RAA", "VOC", cite="40 CFR 141.61"),
+    S("dcm", r"^(dichloromethane|methylene chloride)", 0.005, "mg/L", "MCL", "RAA", "VOC", cite="40 CFR 141.61"),
     S("dcp12", r"1,2-dichloropropane", 0.005, "mg/L", "MCL", "RAA", "VOC", cite="40 CFR 141.61"),
     S("ethylbenzene", r"^ethylbenzene", 0.7, "mg/L", "MCL", "RAA", "VOC", cite="40 CFR 141.61"),
     S("styrene", r"^styrene", 0.1, "mg/L", "MCL", "RAA", "VOC", cite="40 CFR 141.61"),
@@ -83,7 +83,7 @@ STANDARDS: list[Standard] = [
     S("tce", r"(trichloroethylene|trichloroethene)", 0.005, "mg/L", "MCL", "RAA", "VOC", cite="40 CFR 141.61"),
     S("vinyl_chloride", r"vinyl chloride", 0.002, "mg/L", "MCL", "RAA", "VOC", cite="40 CFR 141.61"),
     S("xylenes", r"xylenes?,? total|^total xylenes|^xylenes$", 10, "mg/L", "MCL", "RAA", "VOC", cite="40 CFR 141.61"),
-    # ---- synthetic organics (141.61(c)), common ones
+    # ---- synthetic organics (141.61(c))
     S("alachlor", r"^alachlor", 0.002, "mg/L", "MCL", "RAA", "SOC", cite="40 CFR 141.61"),
     S("atrazine", r"^atrazine", 0.003, "mg/L", "MCL", "RAA", "SOC", cite="40 CFR 141.61"),
     S("bap", r"benzo\(a\)pyrene", 0.0002, "mg/L", "MCL", "RAA", "SOC", cite="40 CFR 141.61"),
@@ -94,7 +94,25 @@ STANDARDS: list[Standard] = [
     S("pcp", r"^pentachlorophenol", 0.001, "mg/L", "MCL", "RAA", "SOC", cite="40 CFR 141.61"),
     S("simazine", r"^simazine", 0.004, "mg/L", "MCL", "RAA", "SOC", cite="40 CFR 141.61"),
     S("edb", r"(ethylene dibromide|1,2-dibromoethane)", 0.00005, "mg/L", "MCL", "RAA", "SOC", cite="40 CFR 141.61"),
-    S("dbcp", r"(dbcp|1,2-dibromo-3-chloropropane)", 0.0002, "mg/L", "MCL", "RAA", "SOC", cite="40 CFR 141.61"),
+    S("dbcp", r"(dbcp|1,2-dibromo-3-chloropropane)", 0.0002, "mg/L", "MCL", "RAA", "SOC", cite="40 CFR 141.61"),    S("silvex", r"(2,4,5-tp|silvex)", 0.05, "mg/L", "MCL", "RAA", "SOC", cite="40 CFR 141.61"),
+    S("carbofuran", r"^carbofuran", 0.04, "mg/L", "MCL", "RAA", "SOC", cite="40 CFR 141.61"),
+    S("chlordane", r"chlordane", 0.002, "mg/L", "MCL", "RAA", "SOC", cite="40 CFR 141.61"),
+    S("dalapon", r"^dalapon", 0.2, "mg/L", "MCL", "RAA", "SOC", cite="40 CFR 141.61"),
+    S("deha", r"di\(2-ethylhexyl\)\s*adipate", 0.4, "mg/L", "MCL", "RAA", "SOC", cite="40 CFR 141.61"),
+    S("dinoseb", r"^dinoseb", 0.007, "mg/L", "MCL", "RAA", "SOC", cite="40 CFR 141.61"),
+    S("diquat", r"^diquat", 0.02, "mg/L", "MCL", "RAA", "SOC", cite="40 CFR 141.61"),
+    S("endothall", r"^endothall", 0.1, "mg/L", "MCL", "RAA", "SOC", cite="40 CFR 141.61"),
+    S("endrin", r"^endrin", 0.002, "mg/L", "MCL", "RAA", "SOC", cite="40 CFR 141.61"),
+    S("heptachlor", r"^heptachlor(?!\s*epoxide)", 0.0004, "mg/L", "MCL", "RAA", "SOC", cite="40 CFR 141.61"),
+    S("heptachlor_epox", r"^heptachlor\s*epoxide", 0.0002, "mg/L", "MCL", "RAA", "SOC", cite="40 CFR 141.61"),
+    S("hcb", r"^hexachlorobenzene", 0.001, "mg/L", "MCL", "RAA", "SOC", cite="40 CFR 141.61"),
+    S("hccpd", r"^hexachlorocyclopentadiene", 0.05, "mg/L", "MCL", "RAA", "SOC", cite="40 CFR 141.61"),
+    S("methoxychlor", r"^methoxychlor", 0.04, "mg/L", "MCL", "RAA", "SOC", cite="40 CFR 141.61"),
+    S("oxamyl", r"^(oxamyl|vydate)", 0.2, "mg/L", "MCL", "RAA", "SOC", cite="40 CFR 141.61"),
+    S("picloram", r"^picloram", 0.5, "mg/L", "MCL", "RAA", "SOC", cite="40 CFR 141.61"),
+    S("pcb", r"(^pcbs?\b|polychlorinated biphenyl|total pcb)", 0.0005, "mg/L", "MCL", "RAA", "SOC", cite="40 CFR 141.61"),
+    S("toxaphene", r"^toxaphene", 0.003, "mg/L", "MCL", "RAA", "SOC", cite="40 CFR 141.61"),
+    S("tcdd", r"2,3,7,8-tcdd|dioxin", 3e-08, "mg/L", "MCL", "RAA", "SOC", cite="40 CFR 141.61"),
 ]
 
 # Lead and copper: action levels on the 90th percentile of tap samples (141.80)

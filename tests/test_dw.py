@@ -104,3 +104,15 @@ def test_ucmr_and_hazard_index(tmp_path):
     assert any(t.marker.symbol == "diamond" for t in pf.data if t.marker)  # 6.2 > 4
     t = DV.ucmr_table(u)
     assert set(t["Contaminant"]) >= {"PFOA", "lithium"}
+
+
+def test_standard_patterns_dont_match_inside_other_names():
+    """'dichloromethane' sits inside 'bromodichloromethane' (a THM with no individual MCL)."""
+    from echo_pull.dw import standards as S
+    for n in ("BROMODICHLOROMETHANE", "DIBROMOCHLOROMETHANE", "CHLOROFORM", "BROMOFORM",
+              "1,1-DICHLOROETHANE", "1,3-DICHLOROBENZENE", "DEETHYLATRAZINE", "SODIUM"):
+        assert S.match(n) is None, n
+    assert S.match("HEPTACHLOR").key == "heptachlor"
+    assert S.match("HEPTACHLOR EPOXIDE").key == "heptachlor_epox"
+    assert S.match("DI(2-ETHYLHEXYL) ADIPATE").key == "deha"
+    assert S.match("DI(2-ETHYLHEXYL) PHTHALATE").key == "dehp"
