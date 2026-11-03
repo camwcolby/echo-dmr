@@ -1,0 +1,116 @@
+
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta name="GENERATOR" content="Microsoft FrontPage 4.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>Drinking Water Branch</title>
+<script language="JavaScript" type="text/javascript">
+function validateSelection()
+	{
+        //Make sure they have picked a region instead of "None"
+        var noSelect = "None";
+        var list = document.forms[0].state_code;
+ 
+        if (list.options[list.selectedIndex].value == noSelect)
+        {
+              //Pop up an alert
+              alert("Select an option from the Region list");
+              list.focus();
+              return false;
+        }
+        return true;
+}
+</script>
+
+</head>
+
+<body bgcolor="#F7F0DE">
+    <div id="page-container">
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="96%" id="AutoNumber1" bgcolor="#F7F0DE">
+        <tr>
+          <td width="20%" height="61" bgcolor="#003366" valign="top">
+            <p align="center">
+              <img border="0" src="Images/sdwisfaucet.jpg" alt="Sdwis Faucet" width="125" height="91"/>
+              <br/>
+              <b><font color="#FFFFFF" size="2">Version&nbsp;
+                  3.02
+                </font> 
+              </b>
+            </p>
+          </td>
+          <td width="76%" height="61" bgcolor="#F7F0DE" valign="top">
+            <p align="center">
+              <img border="0" src="Images/drinking.jpg" alt="Drinking Water Watch" width="672" height="90"/>
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td width="20%" bgcolor="#003366" valign="top">
+            <br>
+            <p align="left">
+            <font color="#FFFFFF" size="4">
+            <a href="https://www.epa.gov/region8-waterops" alt="Drinking Water Online Home"><font color="#FFFFFF">Drinking Water Online Home</font></a>
+            &nbsp;<br><br>
+
+            <p/>
+            <p/>
+            <br>
+          </td>
+           <td width="76%" bgcolor="#F7F0DE">
+           
+            <div align="center"><h2><label for="state_code">Region 8 Public DWW</label></h2></div>
+            
+            
+    <div class="form-container" id="select-region-form" align="center">
+    
+    <form action="select-dww-region;jsessionid=72D080A1E0D4EA48C441D3C322EA2BFE" method="POST" target="_self" onSubmit="return validateSelection()">
+        
+        <!-- get the list of region codes and names from SysProperties -->
+        <select name="state_code" size="3" >
+        
+            	<option selected value="None">-- Make A Selection --</option>
+           
+              <option value=WY>Wyoming</option>
+            
+              <option value=08>Region 8 Tribes</option>
+            
+        </select>
+        <br><br>
+        <input type="Submit" value="Submit">
+    </form>
+    </div>
+      <p>
+      <br>
+      <br>
+      <br>
+          <DIV ALIGN="CENTER">
+<ul>
+<hr width="60%" COLOR="Navy" size="3" noshade />
+<li style="display: inline;border-right-width: 1px;border-right-style: solid;border-right-color: #000000;padding-right: 10px;margin-left: 5px;">
+  <a href="http://www.epa.gov/">EPA Home</a>
+</li>
+<li style="display: inline;border-right-width: 1px;border-right-style: solid;border-right-color: #000000;padding-right: 10px;padding-left: 10px;margin-left: 5px;">
+  <a href="http://www.epa.gov/epafiles/usenotice.htm">Privacy and Security Notice</a>
+</li>
+<!-- BEGIN AREA COMMENTS LINK -->
+<!-- CHANGE link to point to your own contact page -->
+<li style="display: inline;padding-left: 10px;" class="last">
+  <a href="https://www.epa.gov/region8-waterops/forms/contact-us-about-drinking-water-wyoming-or-tribal-lands-epa-region-8">Contact Us</a>
+</li>
+</ul>
+</DIV>
+	
+          </p>   
+    </div>
+          
+           </td>
+        </tr>  
+      </table>
+        
+   
+</body>
+
+</html>

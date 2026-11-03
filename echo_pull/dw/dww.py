@@ -22,26 +22,29 @@ import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 
-HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; inframark-dw-tool/0.1)"}
+# Some state sites reject non-browser clients (403/503), so present as an ordinary browser.
+HEADERS = {
+    "User-Agent": ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                   "(KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36"),
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language": "en-US,en;q=0.9",
+}
 
-# Candidates per state, first that answers wins. Sourced from EPA's primacy agency data page and
-# observed DWW URLs (Nov 2026). Unverified ones are marked; the probe script settles them.
+# Candidates per state, first that answers wins. Checked with scripts/probe_states.py (Nov 2026):
+# working: AL CA DE IL KY MD NV OK SC VT; fixed after the probe: ID MS NE NM KS WY;
+# retried with browser headers / alternate entry pages: AK AZ NJ RI TN.
 STATES: dict[str, list[str]] = {
-    "AK": ["https://dec.alaska.gov/dww"],
+    "AK": ["https://dec.alaska.gov/dww", "https://dec.alaska.gov/DWW"],
     "AL": ["http://dww.adem.alabama.gov/DWW"],
     "AZ": ["https://azsdwis.azdeq.gov/DWW_EXT"],
     "CA": ["https://sdwis.waterboards.ca.gov/PDWW"],
     "DE": ["https://drinkingwater.dhss.delaware.gov/DWW", "https://drinkingwater.dhss.delaware.gov"],
-    "GA": ["http://gadrinkingwater.net/DWWPUB"],
     "ID": ["http://dww.deq.idaho.gov/IDPDWW"],
     "IL": ["https://water.epa.state.il.us/dww"],
     "KS": ["https://dww.kdhe.ks.gov/DWW"],
     "KY": ["https://dep.gateway.ky.gov/DWW"],
-    "LA": ["https://sdw.ldh.la.gov/DWW", "https://sdw.ldh.la.gov"],
     "MD": ["https://mdesdwis.mde.state.md.us/DWW"],
-    "MO": ["https://www.dnr.mo.gov/DWW"],
     "MS": ["https://apps.msdh.ms.gov/DWW"],
-    "MT": ["https://sdwisdww.mt.gov/DWW", "http://sdwisdww.mt.gov:8080/DWW"],   # may have moved
     "NE": ["https://drinkingwater.ne.gov/DWW", "https://drinkingwater.ne.gov"],
     "NJ": ["https://www9.state.nj.us/DEP_WaterWatch_public"],
     "NM": ["https://dww.water.env.nm.gov", "https://dww.water.net.env.nm.gov/NMDWW"],
@@ -52,6 +55,24 @@ STATES: dict[str, list[str]] = {
     "TN": ["https://dataviewers.tdec.tn.gov/DWW"],
     "VT": ["https://anrnode.anr.state.vt.us/DWW"],
     "WY": ["https://sdwisdww.epa.gov/DWWR8WY"],
+}
+
+# Sites that need a step before searching (form POSTs that set a server-side session).
+INIT: dict[str, list[tuple[str, dict]]] = {
+    "WY": [("select-dww-region", {"state_code": "WY"})],      # EPA Region 8: Wyoming vs tribes
+}
+
+# Not on Drinking Water Watch. Shown to the user instead of a failure.
+OTHER_PLATFORM: dict[str, str] = {
+    "LA": "Drinking Water Viewer (newer platform, not yet connected)",
+    "MO": "Drinking Water Viewer (newer platform, not yet connected)",
+    "IN": "Drinking Water Viewer (newer platform, not yet connected)",
+    "OH": "Drinking Water Viewer (newer platform, not yet connected)",
+    "VA": "Drinking Water Viewer (newer platform, not yet connected)",
+    "WV": "Drinking Water Viewer (newer platform, not yet connected)",
+    "TX": "Drinking Water Viewer (newer platform, not yet connected)",
+    "MT": "Montana's own PWS report tool (not yet connected)",
+    "GA": "Georgia's site has an invalid security certificate, so it is not connected",
 }
 
 
@@ -141,17 +162,33 @@ def _col(df, *keys):
 
 
 # ------------------------------------------------------------------ steps
+ENTRY_PAGES = ["index.jsp", "JSP/SearchDispatch", ""]
+
+
 def resolve_base(state: str, sess=None) -> str:
-    """First candidate base URL whose search page answers."""
+    """First candidate base URL with an entry page that answers."""
     sess = sess or _session()
     errs = []
     for base in STATES.get(state.upper(), []):
-        try:
-            _get(sess, f"{base}/index.jsp", retries=0, timeout=20)
-            return base
-        except DWWError as e:
-            errs.append(str(e))
-    raise DWWError(f"No working DWW site for {state}: " + " | ".join(errs))
+        for page in ENTRY_PAGES:
+            try:
+                _get(sess, f"{base}/{page}", retries=0, timeout=20)
+                return base
+            except DWWError as e:
+                errs.append(str(e))
+    raise DWWError(f"No working DWW site for {state}: " + " | ".join(errs[:4]))
+
+
+def open_state(state: str) -> tuple[requests.Session, str]:
+    """A session that has done any site-specific setup, plus the working base URL.
+    Use the same session for every later call: some sites keep state server-side."""
+    sess = _session()
+    base = resolve_base(state, sess)
+    for path, data in INIT.get(state.upper(), []):
+        r = sess.post(f"{base}/{path}", data=data, timeout=30)
+        if r.status_code >= 400:
+            raise DWWError(f"{state} setup step {path} returned HTTP {r.status_code}")
+    return sess, base
 
 
 def find_system(pwsid: str, base: str, sess=None) -> dict:
@@ -168,6 +205,12 @@ def find_system(pwsid: str, base: str, sess=None) -> dict:
             q = _q(a["href"])
             if "tinwsys_is_number" in q:
                 cands.append((q, urljoin(url, a["href"]), a.get_text(strip=True)))
+    # some states (KS) link with javascript:viewData(482, 'KS', 'KS2006108') instead of hrefs
+    for m in re.finditer(r"viewData\(\s*(\d+)\s*,\s*'(\w+)'\s*,\s*'([^']*)'", html):
+        q = {"tinwsys_is_number": m.group(1), "tinwsys_st_code": m.group(2),
+             "wsnumber": m.group(3).strip()}
+        cands.append((q, (f"{base}/JSP/WaterSystemDetail.jsp?tinwsys_is_number={m.group(1)}"
+                          f"&tinwsys_st_code={m.group(2)}"), m.group(3).strip()))
     if not cands:
         raise DWWError(f"{pwsid} not found on {base} (no WaterSystemDetail links)")
     exact = [c for c in cands if pwsid in (c[2].upper() + c[0].get("wsnumber", "").upper())]
@@ -178,9 +221,28 @@ def find_system(pwsid: str, base: str, sess=None) -> dict:
 
 def sample_list(base: str, sysid: dict, begin: date, end: date | None = None,
                 sess=None, max_pages: int = 50) -> pd.DataFrame:
-    """All chem/rad (non-TCR) samples in the date range, with the link to each result page."""
+    """All chem/rad (non-TCR) samples in the date range, with the link to each result page.
+
+    Most sites honor begin_date/end_date in the URL. Some (NM) ignore them and show only the
+    last two years unless the dates are POSTed the way their own date form does it, so if the
+    GET result starts well after `begin`, ask again by POST and keep whichever is fuller."""
     sess = sess or _session()
     end = end or date.today()
+    got = _sample_list_once(base, sysid, begin, end, sess, max_pages, post=False)
+    first = got["collected"].min() if "collected" in got and len(got) else None
+    if first is None or pd.isna(first) or first > pd.Timestamp(begin) + pd.Timedelta(days=120):
+        try:
+            alt = _sample_list_once(base, sysid, begin, end, sess, max_pages, post=True)
+        except (DWWError, requests.RequestException):
+            return got
+        alt_first = alt["collected"].min() if "collected" in alt and len(alt) else None
+        if len(alt) > len(got) or (alt_first is not None and first is not None
+                                   and pd.notna(alt_first) and alt_first < first):
+            return alt
+    return got
+
+
+def _sample_list_once(base, sysid, begin, end, sess, max_pages, post: bool) -> pd.DataFrame:
     n, st = sysid["tinwsys_is_number"], sysid["tinwsys_st_code"]
     url = (f"{base}/JSP/NonTcrSamples.jsp?tinwsys_is_number={n}&tinwsys_st_code={st}"
            f"&history=1&begin_date={begin:%m/%d/%Y}&end_date={end:%m/%d/%Y}&counter=0")
@@ -189,11 +251,21 @@ def sample_list(base: str, sysid: dict, begin: date, end: date | None = None,
         if url in seen:
             break
         seen.add(url)
-        html = _get(sess, url)
-        t = _find(tables(html, url), "sample", "collection")
-        if t is None:
+        if post:
+            r = sess.post(url, data={"begin_date": f"{begin:%m/%d/%Y}",
+                                     "end_date": f"{end:%m/%d/%Y}"}, timeout=45)
+            if r.status_code != 200:
+                raise DWWError(f"HTTP {r.status_code} for POST {url}")
+            html = r.text
+        else:
+            html = _get(sess, url)
+        # the sample table is the one whose rows link to NonTcrSampleResults (header names vary:
+        # "Collection Date & Time" in most states, "Date" in NM)
+        found = [t for t in tables(html, url)
+                 if t["_links"].map(lambda ls: any("NonTcrSampleResults" in l for l in ls)).any()]
+        if not found:
             break
-        frames.append(t)
+        frames.extend(found)
         # pagination: follow a NonTcrSamples link with a higher counter, if the page offers one
         cur = int(_q(url).get("counter", 0) or 0)
         nxt = None
@@ -212,9 +284,10 @@ def sample_list(base: str, sysid: dict, begin: date, end: date | None = None,
         lambda ls: next((l for l in ls if "NonTcrSampleResults.jsp" in l), None))
     df = df.dropna(subset=["result_url"]).drop_duplicates("result_url")
     ren = {}
-    for key, names in {"lab_sample_no": ("lab_sample",), "sample_type": ("type",),
-                       "collected": ("collection",), "sampling_point": ("sampling_point",),
-                       "location": ("location",), "laboratory": ("lab",)}.items():
+    for key, names in {"lab_sample_no": ("lab_sample", "sample_no"), "sample_type": ("type",),
+                       "collected": ("collection", "date"),
+                       "sampling_point": ("sampling_point", "sample_point"),
+                       "location": ("location", "description"), "laboratory": ("laborator",)}.items():
         c = _col(df, *names)
         if c and c not in ren:
             ren[c] = key
@@ -252,7 +325,7 @@ def sample_results(result_url: str, sess=None) -> pd.DataFrame:
     out = pd.DataFrame({
         "analyte_code": t[c_code] if c_code else "",
         "analyte": t[c_name] if c_name else "",
-        "less_than": t[c_lt].str.contains("<|Y", regex=True) if c_lt else False,
+        "less_than": t[c_lt].str.strip().str.upper().isin(["<", "Y", "YES"]) if c_lt else False,
     })
     vu = t[c_conc].map(_value_unit) if c_conc else pd.Series([(float("nan"), "")] * len(t))
     out["value"] = [v for v, _ in vu]
@@ -260,6 +333,8 @@ def sample_results(result_url: str, sess=None) -> pd.DataFrame:
     if c_rl:
         rl = t[c_rl].map(_value_unit)
         out["reporting_level"] = [v for v, _ in rl]
+        # a non-detect's concentration cell is blank (sometimes just a unit): use the RL's unit
+        out["unit"] = [u if u else ru for u, (_, ru) in zip(out["unit"], rl)]
     if c_mcl:
         out["state_mcl_text"] = t[c_mcl]
     out["result_url"] = result_url
@@ -267,9 +342,9 @@ def sample_results(result_url: str, sess=None) -> pd.DataFrame:
 
 
 def all_results(base: str, sysid: dict, begin: date, max_samples: int = 400,
-                workers: int = 4, progress=None) -> tuple[pd.DataFrame, dict]:
+                workers: int = 4, progress=None, sess=None) -> tuple[pd.DataFrame, dict]:
     """Sample list + every sample's results. Returns (results, info)."""
-    sess = _session()
+    sess = sess or _session()
     samples = sample_list(base, sysid, begin, sess=sess)
     info = {"samples_found": len(samples), "samples_fetched": 0, "failed": 0,
             "truncated": len(samples) > max_samples}
@@ -279,7 +354,7 @@ def all_results(base: str, sysid: dict, begin: date, max_samples: int = 400,
         if "collected" in samples else samples.head(max_samples)
     frames, done = [], 0
     with ThreadPoolExecutor(max_workers=workers) as ex:
-        futs = {ex.submit(sample_results, u, _session()): u for u in samples["result_url"]}
+        futs = {ex.submit(sample_results, u, sess): u for u in samples["result_url"]}
         for f in as_completed(futs):
             done += 1
             try:
