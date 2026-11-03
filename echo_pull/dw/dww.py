@@ -32,7 +32,8 @@ HEADERS = {
 
 # Candidates per state, first that answers wins. Checked live with scripts/probe_states.py (Nov 2026):
 # working: AL CA DE ID IL KY MD MS NE NM NV OK SC VT WY; KS needs the "Public Access" step;
-# AK AZ (403) and NJ TN (503) refuse automated requests even with browser headers.
+# AK AZ (403) and NJ (503) refuse automated requests even with browser headers.
+# TN retired DWW for a Tableau dashboard: see tn_tableau.py.
 STATES: dict[str, list[str]] = {
     "AK": ["https://dec.alaska.gov/dww", "https://dec.alaska.gov/DWW"],
     "AL": ["http://dww.adem.alabama.gov/DWW"],
@@ -51,7 +52,6 @@ STATES: dict[str, list[str]] = {
     "NV": ["https://ndwis.ndep.nv.gov/DWW"],
     "OK": ["http://sdwis.deq.state.ok.us/DWW"],
     "SC": ["https://dww.des.sc.gov/DWW"],
-    "TN": ["https://dataviewers.tdec.tn.gov/DWW"],
     "VT": ["https://anrnode.anr.state.vt.us/DWW"],
     "WY": ["https://sdwisdww.epa.gov/DWWR8WY"],
 }
@@ -83,7 +83,6 @@ ACCESS_NOTES: dict[str, str] = {
     "AK": "Alaska's site blocks automated requests (HTTP 403)",
     "AZ": "Arizona's site blocks automated requests (HTTP 403)",
     "NJ": "New Jersey's site refused automated requests (HTTP 503)",
-    "TN": "Tennessee's site refused automated requests (HTTP 503)",
 }
 
 

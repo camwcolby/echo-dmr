@@ -1,6 +1,6 @@
-# Minimum versions only, so Streamlit Cloud can pick builds that match its Python (3.14 as of
-# Nov 2026). Pinning streamlit to an older release left the app spinning on 3.14. After a
-# Streamlit upgrade, an already-open tab may need one hard refresh (Ctrl+Shift+R).
+# Minimum versions only, so Streamlit Cloud picks builds that match its Python.
+# If the deployed app ever spins forever with clean logs, that's been a Streamlit Cloud
+# platform issue (Oct-Nov 2026): delete and redeploy the app with the same URL.
 streamlit>=1.40
 pandas>=2.1
 numpy>=1.26

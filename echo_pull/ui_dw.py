@@ -8,7 +8,7 @@ import pandas as pd
 import streamlit as st
 
 from . import viz as V
-from .dw import dww, federal, standards as S, ucmr, viz_dw as DV
+from .dw import dww, federal, standards as S, tn_tableau as TN, ucmr, viz_dw as DV
 
 PWSID_RE = re.compile(r"^[A-Z]{2}[A-Z0-9]{7}$")
 PLOT_CFG = {"displaylogo": False, "modeBarButtonsToRemove": ["lasso2d", "select2d"]}
@@ -36,7 +36,9 @@ def search(name: str, state: str):
 
 
 @st.cache_data(ttl=TTL, show_spinner=False, max_entries=50)
-def get_state(pwsid: str, years: int, max_samples: int):
+def get_state(pwsid: str, years: int, max_samples: int, name: str = ""):
+    if pwsid[:2] == "TN":
+        return get_tn(pwsid, years, name)
     sess, base = dww.open_state(pwsid[:2])
     sysid = dww.find_system(pwsid, base, sess)
     bar = st.progress(0.0, text="Reading sample results from the state's site...")
@@ -46,6 +48,18 @@ def get_state(pwsid: str, years: int, max_samples: int):
     bar.empty()
     info["base"] = base
     return res, info
+
+
+def get_tn(pwsid: str, years: int, name: str):
+    """Tennessee: one CSV export from TDEC's Tableau dashboard holds the system's whole record."""
+    with st.spinner("Asking Tennessee's dashboard for this system's Chem/Rad samples..."):
+        raw, label = TN.chem_rad(pwsid, name)
+    full = TN.to_results(raw)
+    res = full[full["collected"] >= pd.Timestamp(date.today() - timedelta(days=365 * years))]
+    info = {"tn": True, "rows_found": len(full), "rows_kept": len(res), "label": label.strip(),
+            "first": full["collected"].min(),
+            "base": "data.tn.gov (TDEC Drinking Water Watch dashboard)"}
+    return res.reset_index(drop=True), info
 
 
 @st.cache_data(ttl=TTL, show_spinner=False, max_entries=100)
@@ -132,7 +146,8 @@ def render():
                     f"{int((vw['status'] == 'Open').sum())} open)")
     st.write(" · ".join(bits))
 
-    has_state = dww.supported(pwsid[:2])
+    is_tn = pwsid[:2] == "TN"
+    has_state = dww.supported(pwsid[:2]) or is_tn
     sections = ["Violations", "Lead & copper",
                 "Sample results (state)" if has_state else "Sample results",
                 "PFAS (UCMR 5)", "Standards", "Download"]
@@ -184,22 +199,35 @@ def render():
             s_years = c1.selectbox("Sample history", [1, 2, 3, 5, 10], index=3,
                                    format_func=lambda y: f"last {y} year{'s' if y > 1 else ''}",
                                    key="dw_s_years")
-            cap = c2.selectbox("Max samples", [200, 400, 800, 1500], index=1, key="dw_cap",
-                               help="Each sample is its own page on the state site. Bigger "
-                                    "numbers take longer the first time; results are cached after.")
+            cap = 0 if is_tn else c2.selectbox(
+                "Max samples", [200, 400, 800, 1500], index=1, key="dw_cap",
+                help="Each sample is its own page on the state site. Bigger "
+                     "numbers take longer the first time; results are cached after.")
             if st.button("Load state sample results", type="primary", key="dw_load_state"):
-                st.session_state["dw_state_req"] = (pwsid, s_years, cap)
+                st.session_state["dw_state_req"] = (pwsid, s_years, cap, prof.get("pws_name") or "")
             req = st.session_state.get("dw_state_req")
             if req and req[0] == pwsid:
                 try:
                     res, info = get_state(*req)
                 except Exception as e:  # noqa: BLE001
                     note = dww.ACCESS_NOTES.get(pwsid[:2])
-                    st.error((f"{note}, so sample results can't be pulled from here. "
-                              "Federal data in the other sections still works.") if note else
-                             f"The {pwsid[:2]} state site didn't cooperate: {str(e)[:250]}")
+                    if is_tn:
+                        st.error("Tennessee's dashboard didn't return this system. It matches on the "
+                                 "exact system name, so a name that differs from EPA's can miss; "
+                                 "TDEC also only publishes what it publishes (Chem/Rad samples, "
+                                 f"roughly the last few years). Detail: {str(e)[:200]}")
+                    else:
+                        st.error((f"{note}, so sample results can't be pulled from here. "
+                                  "Federal data in the other sections still works.") if note else
+                                 f"The {pwsid[:2]} state site didn't cooperate: {str(e)[:250]}")
                     res, info = pd.DataFrame(), {}
-                if info:
+                if info.get("tn"):
+                    first = info.get("first")
+                    st.caption(f"{info['rows_kept']} of {info['rows_found']} results kept for the "
+                               f"window, from {info['base']}"
+                               + (f". TN's record for this system starts {first:%b %Y}."
+                                  if pd.notna(first) else "."))
+                elif info:
                     msg = (f"{info['samples_fetched']} of {info['samples_found']} samples read "
                            f"from {info.get('base', '')}.")
                     if info.get("truncated"):

@@ -177,10 +177,72 @@ def labels_for(pwsid: str, name: str) -> list[str]:
     return out
 
 
+def _col(df: pd.DataFrame, *words) -> str | None:
+    """First column whose name contains all the words (case-insensitive)."""
+    for c in df.columns:
+        lc = str(c).lower()
+        if all(w in lc for w in words):
+            return c
+    return None
+
+
+def _num(s: pd.Series) -> pd.Series:
+    return pd.to_numeric(s.astype(str).str.strip().str.replace(",", "", regex=False)
+                         .str.lstrip("<").replace({"": None, "nan": None}), errors="coerce")
+
+
+def to_results(raw: pd.DataFrame) -> pd.DataFrame:
+    """TN export -> the same results schema the DWW connector returns.
+
+    TN writes a non-detect as Result 0 with a blank unit and the detection limit filled in, so a
+    result of 0 or blank is a non-detect at the DL, in the DL's unit. Cells are space-padded and the
+    date looks like '01/AUG/2024\\n07:33'.
+    """
+    if raw is None or raw.empty:
+        return pd.DataFrame()
+    df = raw.apply(lambda s: s.fillna("").astype(str).str.strip())
+    c = {k: _col(df, *w) for k, w in {
+        "name": ("analyte", "name"), "code": ("analyte", "code"), "group": ("group",),
+        "type": ("type",), "date": ("collection",), "point": ("sampling", "point"),
+        "loc": ("sample", "location"), "lab": ("laboratory",), "lsn": ("lab", "sample"),
+        "res": ("result",), "uom": ("result", "uom"), "dl": ("detection", "limit"),
+        "dl_uom": ("detection", "uom")}.items()}
+    if c["res"] == c["uom"]:                       # 'Result' must not be the 'Result UOM' column
+        c["res"] = next((x for x in df.columns if str(x).strip().lower() == "result"), c["res"])
+    if c["dl"] == c["dl_uom"]:
+        c["dl"] = next((x for x in df.columns if str(x).strip().lower() == "detection limit"), c["dl"])
+    if not c["name"] or not c["res"]:
+        raise TNError(f"TN export columns changed: {list(df.columns)}")
+
+    def g(k):
+        return df[c[k]] if c[k] else pd.Series("", index=df.index)
+
+    value, dl = _num(g("res")), _num(g("dl"))
+    unit, dl_unit = g("uom"), g("dl_uom")
+    nd = value.isna() | (value <= 0)
+    when = g("date").str.split(r"[\n\r ]", n=1, regex=True).str[0]
+    return pd.DataFrame({
+        "analyte_code": g("code"),
+        "analyte": g("name"),
+        "contaminant_group": g("group"),
+        "less_than": nd,
+        "value": value.where(~nd),
+        "unit": unit.where(unit != "", dl_unit),
+        "reporting_level": dl,
+        "collected": pd.to_datetime(when, format="%d/%b/%Y", errors="coerce"),
+        "sample_type": g("type"),
+        "sampling_point": g("point"),
+        "location": g("loc"),
+        "lab_sample_no": g("lsn"),
+        "laboratory": g("lab"),
+        "result_url": f"{HOST}/t/{SITE}/views/{WORKBOOK}/{VIEW}",
+    })
+
+
 def chem_rad(pwsid: str, name: str, debug_dir=None) -> tuple[pd.DataFrame, str]:
     """All Chem/Rad sample rows for one TN system, as exported by the dashboard."""
     last = None
-    for label in labels_for(pwsid, name):
+    for label in labels_for(pwsid, name)[:4]:
         s = Session(debug_dir)                       # fresh session per try: filters don't stack
         s.filter_system(label)
         df = s.export_csv()
