@@ -1,0 +1,168 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script src="JavaScriptServlet"></script>
+
+
+
+
+
+<html>
+<head>
+<title>Drinking Water Watch (DWW KS 3.6)</title>
+<LINK REL=StyleSheet HREF="css/gec_style.css" TYPE="text/css" />
+<script type="text/javascript">
+            var	oBlank		=	/^[\s\xA0]*$/;
+
+            /*******************************************************************
+             ********************************************************************
+             **
+             **		function:	This function is the event handler that checks
+             **					the form submit to ensure that it has everything
+             **					needed for verifying the user credential.
+             **
+             **		Params:		ObjForm		This is the form tag that will be
+             **								posted to the server
+             **
+             **		Returns:	a true if the form content has the necessary
+             **					information to verify the users credentials.
+             **					otherwise false.
+             **
+             **		Author:		Created By Shadow (MED) on June, 2010
+             **
+             **		History:	Created By Shadow (MED) on June, 2010
+             **
+             ********************************************************************
+             *******************************************************************/
+            function	FormSubmit(ObjForm)
+            {
+                var	oLogin				=	null,	oPublic	=	null,
+                oAction				=	null;
+
+                oLogin				=	ObjForm["login"];
+                oPublic				=	ObjForm["public"];
+                oAction				=	ObjForm["action"];
+
+                oLogin.disabled		=	true;
+                oPublic.disabled	=	true;
+
+                var	oUser				=	null,	oPass	=	null,
+                zUser				=	null,	zPass	=	null,
+                bUser				=	false,	bPass	=	false,
+                bPublic				=	false,	bOk		=	true;
+
+                bPublic				=	(oPublic.m_bClicked	==	true);
+
+                if (!bPublic)
+                {
+                    oUser			=	ObjForm["username"];
+                    oPass			=	ObjForm["password"];
+
+                    zUser			=	oUser.value;
+                    zPass			=	oPass.value;
+
+                    bUser			=	(oBlank.test(zUser));
+                    bPass			=	(oBlank.test(zPass));
+
+                    bOk				=	(	(!bUser)	&&	(!bPass)	);
+                    oAction.value	=	"login";
+
+                    if (!bOk)
+                    {
+                        alert(	"You need both a username and a password "	+
+                            "to log into this application?")
+                    }
+                }
+                else
+                {
+                    oAction.value	=	"public";
+                }
+
+                oLogin.disabled		=	(bOk);
+                oPublic.disabled	=	(bOk);
+
+                return(bOk);
+            }
+        </script>
+<style>
+.LoginError {
+	color: red;
+	font-size: medium;
+	font-weight: bold;
+	text-align: center;
+	vertical-align: middle;
+}
+</style>
+</head>
+<body class="StandardLF">
+
+	<form name="loginform" id="loginform" method="post" action="Login"
+		onsubmit="return(FormSubmit(this));">
+		<input type="hidden" id="action" name="action" value="none" />
+		<table title="Drinking Water Watch (DWW KS 3.6)">
+			<tr>
+				<td class="MainLoginLogo" colspan="2">DWW KS 3.6</td>
+			</tr>
+			<tr>
+				<td>
+					<table class="LoginLF" title="log into drinking water watch"
+						align="center">
+						
+							
+							
+							
+								<caption class="LoginError">&nbsp;</caption>
+							
+						
+						
+						<tr>
+							<th class="LoginLF" colspan="2">Login</th>
+						</tr>
+						<tr>
+							<td class="LoginLF_Lable">User Name:</td>
+							<td><input type="text" name="username" id="username"
+								value="" /></td>
+						</tr>
+						<tr>
+							<td class="LoginLF_Lable">Password:</td>
+							<td><input type="password" name="password" id="password"
+								value="" />
+								<input type="hidden" name="captcha" id="g-recaptcha-response">	
+							</td>
+						</tr>
+						<tr>
+							<td colspan="2" align="center"><input type="submit"
+								class="LoginLF" name="login" id="login"
+								onclick="this.m_bClicked=true;" value="Sign In" /></td>
+						</tr>
+					</table>
+				</td>
+				<td title="Public Access of Drinking Water Watch"><input
+					class="LoginLF" type="submit" name="public" id="public"
+					onclick="this.m_bClicked=true;" value="Public Access" /></td>
+			</tr>
+			<tr>
+									<td colspan="2">
+										<br><br>
+										<div style="margin-left:15%" id="inline-badge"></div>
+									</td>
+			</tr>
+		</table>
+	</form>
+	
+<script src="JavaScript/RecaptchaInitialization.js"></script>
+</body>
+</html>
+
+
