@@ -182,7 +182,7 @@ if section == "Permit limits":
             p = p[p["parameter"].isin(par_sel)]
 
         st.caption(f"{len(p)} of {len(panels)} limits, riskiest first. Blue: reported value "
-                   "(hollow = repaired data-entry error). Grey step: the limit in force each "
+                   "(hollow = repaired data-entry error). Orange step: the limit in force each "
                    "month, so seasonal and renewal changes show where they applied. Red diamond: "
                    "violation. Hover any point for details; drag to zoom, double-click to reset.")
         mode = "pct" if view.startswith("%") else "value"

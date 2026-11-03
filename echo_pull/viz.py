@@ -17,7 +17,8 @@ import plotly.graph_objects as go
 from . import analysis as A
 
 BLUE = "#2a78d6"          # categorical slot 1: reported values
-LIMIT_INK = "#52514e"     # secondary ink: permit limit (a reference, not a series)
+LIMIT = "#eb6834"         # categorical slot 2 (orange): permit limit; validated against blue in
+                          # light and dark, and readable on both surfaces
 CRITICAL = "#d03b3b"      # status critical: violations only
 MUTED = "#898781"
 GRID = "rgba(137,135,129,0.25)"   # hairline that reads on light and dark surfaces
@@ -30,7 +31,8 @@ PANEL_KEY = ["outfall", "monitoring_location", "parameter", "stat_base", "unit"]
 def _base_layout(fig: go.Figure, height: int, title: str | None = None) -> go.Figure:
     fig.update_layout(
         height=height, margin=dict(l=8, r=12, t=30 if title else 8, b=8),
-        title=dict(text=title, x=0, xanchor="left", font=dict(size=13)) if title else None,
+        # explicit empty title: with None, Streamlit's theme prints the word "undefined"
+        title=dict(text=title or "", x=0, xanchor="left", font=dict(size=13)),
         paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
         font=dict(family=FONT, size=11), showlegend=False, hovermode="closest",
         hoverlabel=dict(font=dict(family=FONT, size=12)),
@@ -244,7 +246,10 @@ def limit_panel(df: pd.DataFrame, row, x_range, mode: str = "value") -> go.Figur
     # ---- limit in force, as a step spanning each monitoring month
     if mode == "pct":
         if g["limit"].notna().any():
-            fig.add_hline(y=100, line=dict(color=LIMIT_INK, width=1.5))
+            fig.add_hline(y=100, line=dict(color=LIMIT, width=2))
+            fig.add_annotation(x=1, xref="paper", y=100, text="limit", showarrow=False,
+                               xanchor="right", yanchor="bottom", yshift=1,
+                               font=dict(size=10, color=MUTED))
     else:
         lx, ly = [], []
         prev_end = None
@@ -260,8 +265,14 @@ def limit_panel(df: pd.DataFrame, row, x_range, mode: str = "value") -> go.Figur
             ly += [v, v]
             prev_end = e0 + pd.Timedelta(days=1)
         fig.add_trace(go.Scatter(
-            x=lx, y=ly, mode="lines", line=dict(color=LIMIT_INK, width=1.5, shape="linear"),
+            x=lx, y=ly, mode="lines", line=dict(color=LIMIT, width=2, shape="linear"),
             name="Permit limit", hoverinfo="skip", connectgaps=False))
+        last_lim = g["limit"].dropna()
+        if len(last_lim):
+            fig.add_annotation(x=1, xref="paper", y=float(last_lim.iloc[-1]), showarrow=False,
+                               text=f"limit {_fmt(float(last_lim.iloc[-1]), unit)}",
+                               xanchor="right", yanchor="bottom", yshift=1,
+                               font=dict(size=10, color=MUTED))
 
     # ---- reported values
     ok = y.notna()
