@@ -37,12 +37,11 @@ def search(name: str, state: str):
 
 @st.cache_data(ttl=TTL, show_spinner=False, max_entries=50)
 def get_state(pwsid: str, years: int, max_samples: int):
-    st_code = pwsid[:2]
-    base = dww.resolve_base(st_code)
-    sysid = dww.find_system(pwsid, base)
+    sess, base = dww.open_state(pwsid[:2])
+    sysid = dww.find_system(pwsid, base, sess)
     bar = st.progress(0.0, text="Reading sample results from the state's site...")
     res, info = dww.all_results(base, sysid, date.today() - timedelta(days=365 * years),
-                                max_samples=max_samples,
+                                max_samples=max_samples, sess=sess,
                                 progress=lambda f: bar.progress(f, text=f"Reading sample results... {f:.0%}"))
     bar.empty()
     info["base"] = base
@@ -177,9 +176,9 @@ def render():
     # ---- state sample results
     if section.startswith("Sample results"):
         if not has_state:
-            st.info(f"{pwsid[:2]} isn't connected yet. Sample-level results come from each state's "
-                    "own system; this state runs a different platform. Federal violations, lead "
-                    "and copper, and PFAS are still available in the other sections.")
+            why = dww.OTHER_PLATFORM.get(pwsid[:2], "a different platform")
+            st.info(f"{pwsid[:2]} sample results aren't connected yet: {why}. Federal violations, "
+                    "lead and copper, and PFAS are still available in the other sections.")
         else:
             c1, c2, _ = st.columns([2, 2, 4])
             s_years = c1.selectbox("Sample history", [1, 2, 3, 5, 10], index=3,

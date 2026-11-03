@@ -1,0 +1,211 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<html>
+<script src="../JavaScriptServlet"></script>
+<script type="text/javascript" language="Javascript">
+
+        function viewData(is_number, st_code, wsnumber)
+        {
+            document.getElementById("tinwsys_is_number").value = is_number;
+            document.getElementById("tinwsys_st_code").value = st_code;
+            document.getElementById("wsnumber").value = wsnumber;
+            document.watersystems.action = "WaterSystemDetail.jsp";
+            document.watersystems.submit();
+        }
+
+        function viewFact(is_number, st_code,type)
+        {
+            document.getElementById("tinwsys_is_number").value = is_number;
+            document.getElementById("tinwsys_st_code").value = st_code;
+            
+            	document.watersystems.action = "Fact.jsp";
+            
+            
+            document.watersystems.submit();
+        }
+        
+        function viewPC(is_number, st_code)
+        {
+            document.getElementById("tinwsys_is_number").value = is_number;
+            document.getElementById("tinwsys_st_code").value = st_code;
+            document.watersystems.action = "PC.jsp";
+            document.watersystems.submit();
+        }
+
+        function openpopup()
+        {
+
+            var popurl="../Help/html_Water_Systems.htm";
+            winpops=window.open(popurl,"","width=400,height=338,toolbar,scrollbars,menubar,resizable,")
+
+        }
+
+    </script>
+
+<head>
+<title>Water Systems</title>
+
+	
+	
+		<LINK href="..\css\gec_style.css" rel="stylesheet" type="text/css">
+	
+
+</head>
+<form name="watersystems" method="POST">
+
+	<body class="StandardLF">
+
+		<table border="0" cellpadding="0" cellspacing="0"
+			style="border-collapse: collapse; border-color: #111111; height: 1px;"
+			width="100%" id="AutoNumber1" align="left">
+			<tr>
+				
+				<td width="79%" height="61" bgcolor="#F7F0DE">
+					<p align="center">
+						<b> <font size="6" face="Benguiat Bk BT" color="#306192">
+								Drinking Water Watch </font>
+						</b>
+					</p>
+				</td>
+			</tr>
+			<tr>
+				
+				<td width="79%" height="229" bgcolor="#F7F0DE" valign="top">
+					<p align="center">
+						<u><b> <font face="Benguiat Bk BT" size="5"> Water
+									Systems </font>
+						</b></u>
+					</p> 
+						 
+					 
+
+					<div align="center">
+
+						
+
+						<table border="1" cellpadding="0" cellspacing="0"
+							style="border-collapse: collapse; border-color: #111111; height: 36px;"
+							width="94%" id="AutoNumber7">
+							<tr>
+								<td width="8%" height="31" bgcolor="#306192" align="center">
+									<font color="#FFFFFF"> <b>Water System No.</b>
+								</font>
+								</td>
+								<td width="30%" height="31" bgcolor="#306192" align="center">
+									<font color="#FFFFFF"> <b>Water System Name</b>
+								</font>
+								</td>
+								<td width="5%" height="31" bgcolor="#306192" align="center">
+									<font color="#FFFFFF"> <b>Type</b>
+								</font>
+								</td>
+								<td width="5%" height="31" bgcolor="#306192" align="center">
+									<font color="#FFFFFF"> <b>Status</b>
+								</font>
+								</td>
+								<td width="11%" height="31" bgcolor="#306192" align="center">
+									<font color="#FFFFFF"> <b>Pri. Cnty Served</b>
+								</font>
+								</td>
+								<td width="5%" height="31" bgcolor="#306192" align="center">
+									<font color="#FFFFFF"> <b>Pri. Src. Water Type</b>
+								</font>
+								</td>
+								
+							</tr>
+
+							
+								
+							
+							
+							<tr>
+								<td width="8%" height="18" class="WSNLink" bgcolor="#DBDBDB">
+									<a class="WSNLink"
+									href="javascript:viewData(482, 'KS', 'KS2006108   ')"
+									onmouseover="window.status='Water System Detail Information for JUNCTION CITY, CITY OF'; return true"
+									onclick="window.status='Water System Detail Information for JUNCTION CITY, CITY OF'; return true"
+									title="JUNCTION CITY, CITY OF"> KS2006108   
+								</a>
+
+								</td>
+								<td width="30%" height="18" align="left" bgcolor="#DBDBDB">
+									JUNCTION CITY, CITY OF 
+									   
+											 
+											
+										 
+								</td>
+								<td width="5%" height="18" align="center" bgcolor="#DBDBDB">
+									C   
+								</td>
+								<td width="5%" height="18" align="center" bgcolor="#DBDBDB">
+									A
+								</td>
+								<td width="11%" height="18" align="center" bgcolor="#DBDBDB">
+									<font size="2">  GEARY
+									
+								</font>
+								</td>
+								<td width="5%" height="18" align="center" bgcolor="#DBDBDB">
+									GW 
+								</td>
+								
+							</tr>
+							
+						</table>
+					</div>
+				</td>
+			</tr>
+			<tr>
+				
+				<td width="79%" height="65" bgcolor="#F7F0DE" valign="top">
+					<blockquote>
+						<b> <br> <font face="Arial"> Total Number of
+								Records Fetched = 1
+						</font>
+						</b>
+					</blockquote>
+				</td>
+			</tr>
+		</table>
+		
+
+		<input type="hidden" name="tinwsys_is_number" id="tinwsys_is_number"
+			value="" />
+		<input type="hidden" name="tinwsys_st_code" id="tinwsys_st_code"
+			value="" />
+		<input type="hidden" name="wsnumber" id="wsnumber" value="" />
+		<input type="hidden" name="begin_date" id="begin_date" value="" />
+		<input type="hidden" name="end_date" id="end_date" value="" />
+		<input type="hidden" name="counter" id="counter" value="" />
+
+		<p>&nbsp;</p>
+
+	</body>
+</form>
+<!-- This will close the Oracle Connection for this page -->
+
+
+</html>

@@ -55,9 +55,9 @@ def probe(st: str) -> dict:
     row = {"state": st, "base": "", "pwsid": "", "step_failed": "", "error": "",
            "samples_listed": 0, "results_rows": 0, "example_analytes": "", "seconds": 0}
     t0 = time.time()
-    sess = dww._session()
     try:
-        row["base"] = base = dww.resolve_base(st, sess)
+        sess, base = dww.open_state(st)
+        row["base"] = base
     except Exception as e:  # noqa: BLE001
         row.update(step_failed="site", error=str(e)[:300])
         return row
@@ -86,12 +86,13 @@ def probe(st: str) -> dict:
             return row
         r = dww.sample_results(s["result_url"].iloc[0], sess)
         row["results_rows"] = len(r)
-        if r.empty or r["value"].isna().all():
+        if r.empty or not (r["value"].notna() | r["less_than"]).any():
             row.update(step_failed="sample_results", error="no results parsed")
             save(st, "results", dww._get(sess, s["result_url"].iloc[0]))
         else:
             row["example_analytes"] = "; ".join(
-                f"{a} = {v:g} {u}" for a, v, u in r[["analyte", "value", "unit"]].head(3).values)
+                (f"{a} = {v:g} {u}" if v == v else f"{a} not detected ({u})")
+                for a, v, u in r[["analyte", "value", "unit"]].head(3).values)
     except Exception as e:  # noqa: BLE001
         row.update(step_failed="samples", error=str(e)[:300])
     row["seconds"] = round(time.time() - t0, 1)
@@ -99,6 +100,10 @@ def probe(st: str) -> dict:
 
 
 def main(states):
+    skipped = [s for s in states if s in dww.OTHER_PLATFORM and s not in dww.STATES]
+    for s in skipped:
+        print(f"{s}: skipped, {dww.OTHER_PLATFORM[s]}")
+    states = [s for s in states if s in dww.STATES]
     rows = []
     for st in states:
         print(f"{st} ...", flush=True)

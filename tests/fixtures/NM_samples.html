@@ -1,0 +1,1595 @@
+
+
+<html>
+
+<script language="Javascript" src="../JavaScript/DateValidationJavascript.js"></script>
+
+<script language="Javascript" src="../JavaScript/date-picker.js"></script>
+
+<script language="Javascript">
+
+</script>
+
+<!-- This will establish a oracle connection for the entire page -->
+
+
+<!-- This will get the tinwsys_is_number and tinwsys_st_code from the request object -->
+
+
+
+<head>
+
+<title>NMDWB, Drinking Water Watch</title>
+
+</head>
+
+<body bgcolor="#F7F0DE">
+
+<table border="0" cellspacing="0" width="100%" bgcolor="#F7F0DE">
+  <tr>
+    <td width="100%">
+    <table border="1" cellspacing="0" width="100%" bgcolor="#C0C0C0" style="border-collapse: collapse" bordercolor="#111111" cellpadding="0">
+      <tr>
+        <th width="33%" bgcolor="#306192"><a href="https://www.env.nm.gov/"><font color="#FFFFFF" title="New Mexico Environment Department">New Mexico Environment Department</font></a></th>
+        <th width="33%" bgcolor="#306192"><a href="https://sep.net.env.nm.gov/sep/login-form;jsessionid=9BA3F13352CC8C7A3DA6506769EB76AF.tomcat"><font color="#FFFFFF" title ="UOCP Operator Lookup">UOCP Operator Lookup</font></a></th>
+        <th width="34%" bgcolor="#306192"><a href="https://www.env.nm.gov/water.html"><font color="#FFFFFF" title ="Drinking Water Program">Drinking Water Program</font></a></th>
+      </tr>
+      <tr>
+        <th width="33%" bgcolor="#306192"><a href="../Maps/Map_Template.jsp"><font color="#FFFFFF" title ="County Map of NM">County Map of NM</font></a></th>
+        <th width="33%" bgcolor="#306192"><a href="../"><font color="#FFFFFF" title ="Water System Search">Water System Search</font></a></th>
+        <th width="34%" bgcolor="#306192"><font color="#FFFFFF">Help</font></th>
+      </tr>
+    </table>
+
+    
+  
+  
+
+
+
+    <table border="1" cellspacing="0" width="100%" bgcolor="#99CCFF" style="border-collapse: collapse" bordercolor="#111111" cellpadding="0">
+      <tr>
+        <th width="100%" colspan="4" bgcolor="#306192"><font size="4" color="#FFFFFF">Water System Detail Information</font></th>
+      </tr>
+      <tr>
+        <td width="20%" bgcolor="#306192"><p style="margin-left: 5"><font color="#FFFFFF">Water System No.:</font></p></td>
+        <td width="50%" bgcolor="#DBDBDB"><p style="margin-left: 5">NM3520308   </p></td>
+        <td width="15%" bgcolor="#306192"><p style="margin-left: 5"><font color="#FFFFFF">Federal Type:</font></p></td>
+        <td width="15%" bgcolor="#DBDBDB"><p style="margin-left: 5">C   </p></td>
+      </tr>
+      <tr>
+        <td width="20%" bgcolor="#306192"><p style="margin-left: 5"><font color="#FFFFFF">Water System Name:</font></p></td>
+        <td width="50%" bgcolor="#DBDBDB"><p style="margin-left: 5">ARTESIA MUNICIPAL WATER SYSTEM</p></td>
+        <td width="15%" bgcolor="#306192"><p style="margin-left: 5"><font color="#FFFFFF">Federal Source:</font></p></td>
+        <td width="15%" bgcolor="#DBDBDB"><p style="margin-left: 5">GW </p></td>
+      </tr>
+      <tr>
+        <td width="20%" bgcolor="#306192"><p style="margin-left: 5"><font color="#FFFFFF">Principal County Served:</font></p></td>
+        <td width="50%" bgcolor="#DBDBDB"><p style="margin-left: 5">EDDY</p></td>
+        <td width="15%" bgcolor="#306192"><p style="margin-left: 5"><font color="#FFFFFF">System Status:</font></p></td>
+        <td width="15%" bgcolor="#DBDBDB"><p style="margin-left: 5">A</p></td>
+      </tr>
+      <tr>
+        <td width="20%" bgcolor="#306192"><p style="margin-left: 5"><font color="#FFFFFF">Principal City Served:</font></p></td>
+        <td width="50%" bgcolor="#DBDBDB"><p style="margin-left: 5">ARTESIA</p></td>
+        <td width="15%" bgcolor="#306192"><p style="margin-left: 5"><font color="#FFFFFF">Activity Date:</font></p></td>
+        <td width="15%" bgcolor="#DBDBDB"><p style="margin-left: 5">
+            06-01-1977
+            </p></td>
+      </tr>
+    </table>
+
+
+ <br></br>
+<table border="0" width="80%" summary="Sample Collection Date">
+    <tr>
+      <td width="100%">This list displays Non-TCR Sample Results for the last 2 years by
+        default. If you need to search for a specific date range, use the
+        following date fields (you can also pick a date from the pop-up calendar
+        next to the field) and click on Search.
+        <form name="dateForm" method="POST" onSubmit="return ValidateForm()" action="NonTcrSamples.jsp?tinwsys_is_number=100&tinwsys_st_code=NM&history=1&counter=1">
+          <p><b><label for="SCDF">Sample Collection Date From </Label></b>&nbsp; <input type="text" name="begin_date" size="10" id="SCDF">&nbsp;
+          <a href="javascript:show_calendar('dateForm.begin_date');" title="Sample Collection Date From"><img border="0" src="../Images/CalendarIcon.gif" alt="Calendar"></a>&nbsp;
+          <b><label for="SCDF">To</label></b>&nbsp; <input type="text" name="end_date" size="10" id="SCDT">&nbsp; <a href="javascript:show_calendar('dateForm.end_date');" title="Sample Collection Date To"><img border="0" src="../Images/CalendarIcon.gif" alt="Calendar"></a>&nbsp;
+          <input type="image" name="searchgif" src="../Images/search_150.gif" alt="Search" width="78" height="35" border="0"></p>
+        </form>
+      </td>
+    </tr>
+  </table>
+	<table border="1" cellspacing="0" width="100%" bgcolor="#FFCC99" style="border-collapse: collapse" bordercolor="#111111" cellpadding="2">
+      <tr>
+        <th width="100%" colspan="6" bgcolor="#306192"><font color="#FFFFFF" size="4">Other Chemical Samples</font></th>
+      </tr>
+      <tr>
+        <th width="5%" bgcolor="#306192"><font color="#FFFFFF">Type</font></th>
+	<th width="20%" bgcolor="#306192"><font color="#FFFFFF">Sample<br>No.</font></th>
+        <th width="10%" bgcolor="#306192"><font color="#FFFFFF">Date</font></th>
+	<th width="10%" bgcolor="#306192"><font color="#FFFFFF">Sample<br>Point</font></th>
+	<th width="25%" bgcolor="#306192"><font color="#FFFFFF">Sample Pt.<br> Description</font></th>
+	<th width="30%" bgcolor="#306192"><font color="#FFFFFF">Laboratory</font></th>
+      </tr>
+
+
+	
+	
+
+      <tr>
+	<td width="5%" bgcolor="#DBDBDB" align="center">RT</td>
+        <td width="20%" bgcolor="#DBDBDB" align="center">
+
+<a href="NonTcrSampleResults.jsp?tinwsys_is_number=100&tinwsys_st_code=NM&tsasampl_is_number=1023373&tsasampl_st_code=NM&history=1&counter=0" title=2026023815>2026023815
+</td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">
+            09-22-2026
+            </td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">SP203080241 </td>
+	<td width="25%" bgcolor="#DBDBDB">
+
+
+
+ROSELAWN TREATMENT PLANT
+
+
+
+</td>
+	<td width="30%" bgcolor="#DBDBDB">SCIENTIFIC LABORATORY DIVISION</td>	
+      </tr>
+
+
+      <tr>
+	<td width="5%" bgcolor="#DBDBDB" align="center">RT</td>
+        <td width="20%" bgcolor="#DBDBDB" align="center">
+
+<a href="NonTcrSampleResults.jsp?tinwsys_is_number=100&tinwsys_st_code=NM&tsasampl_is_number=1023367&tsasampl_st_code=NM&history=1&counter=0" title=2026023820>2026023820
+</td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">
+            09-22-2026
+            </td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">SP203080241 </td>
+	<td width="25%" bgcolor="#DBDBDB">
+
+
+
+ROSELAWN TREATMENT PLANT
+
+
+
+</td>
+	<td width="30%" bgcolor="#DBDBDB">SCIENTIFIC LABORATORY DIVISION</td>	
+      </tr>
+
+
+      <tr>
+	<td width="5%" bgcolor="#DBDBDB" align="center">RT</td>
+        <td width="20%" bgcolor="#DBDBDB" align="center">
+
+<a href="NonTcrSampleResults.jsp?tinwsys_is_number=100&tinwsys_st_code=NM&tsasampl_is_number=1011144&tsasampl_st_code=NM&history=1&counter=0" title=885-52662-1>885-52662-1
+</td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">
+            07-06-2026
+            </td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">TTHM-1      </td>
+	<td width="25%" bgcolor="#DBDBDB">
+
+
+
+702 AIRPORT ROAD
+
+
+
+</td>
+	<td width="30%" bgcolor="#DBDBDB">HALL ENVIRONMENTAL ANALYSIS LABORATORY</td>	
+      </tr>
+
+
+      <tr>
+	<td width="5%" bgcolor="#DBDBDB" align="center">RT</td>
+        <td width="20%" bgcolor="#DBDBDB" align="center">
+
+<a href="NonTcrSampleResults.jsp?tinwsys_is_number=100&tinwsys_st_code=NM&tsasampl_is_number=1011145&tsasampl_st_code=NM&history=1&counter=0" title=885-52668-1>885-52668-1
+</td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">
+            07-06-2026
+            </td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">DBP-1       </td>
+	<td width="25%" bgcolor="#DBDBDB">
+
+
+
+1805 S. 27TH ST
+
+
+
+</td>
+	<td width="30%" bgcolor="#DBDBDB">HALL ENVIRONMENTAL ANALYSIS LABORATORY</td>	
+      </tr>
+
+
+      <tr>
+	<td width="5%" bgcolor="#DBDBDB" align="center">RT</td>
+        <td width="20%" bgcolor="#DBDBDB" align="center">
+
+<a href="NonTcrSampleResults.jsp?tinwsys_is_number=100&tinwsys_st_code=NM&tsasampl_is_number=1009830&tsasampl_st_code=NM&history=1&counter=0" title=2026013308>2026013308
+</td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">
+            05-26-2026
+            </td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">SP203080071 </td>
+	<td width="25%" bgcolor="#DBDBDB">
+
+
+
+WELL #7 (ROSELAWN)
+
+
+
+</td>
+	<td width="30%" bgcolor="#DBDBDB">SCIENTIFIC LABORATORY DIVISION</td>	
+      </tr>
+
+
+      <tr>
+	<td width="5%" bgcolor="#DBDBDB" align="center">RT</td>
+        <td width="20%" bgcolor="#DBDBDB" align="center">
+
+<a href="NonTcrSampleResults.jsp?tinwsys_is_number=100&tinwsys_st_code=NM&tsasampl_is_number=1007090&tsasampl_st_code=NM&history=1&counter=0" title=2026010985>2026010985
+</td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">
+            05-04-2026
+            </td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">SP203080251 </td>
+	<td width="25%" bgcolor="#DBDBDB">
+
+
+
+INDUSTRIAL TREATMENT PLANT
+
+
+
+</td>
+	<td width="30%" bgcolor="#DBDBDB">SCIENTIFIC LABORATORY DIVISION</td>	
+      </tr>
+
+
+      <tr>
+	<td width="5%" bgcolor="#DBDBDB" align="center">RT</td>
+        <td width="20%" bgcolor="#DBDBDB" align="center">
+
+<a href="NonTcrSampleResults.jsp?tinwsys_is_number=100&tinwsys_st_code=NM&tsasampl_is_number=1007091&tsasampl_st_code=NM&history=1&counter=0" title=2026010986>2026010986
+</td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">
+            05-04-2026
+            </td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">SP203080201 </td>
+	<td width="25%" bgcolor="#DBDBDB">
+
+
+
+5TH STREET TREATMENT PLANT
+
+
+
+</td>
+	<td width="30%" bgcolor="#DBDBDB">SCIENTIFIC LABORATORY DIVISION</td>	
+      </tr>
+
+
+      <tr>
+	<td width="5%" bgcolor="#DBDBDB" align="center">RT</td>
+        <td width="20%" bgcolor="#DBDBDB" align="center">
+
+<a href="NonTcrSampleResults.jsp?tinwsys_is_number=100&tinwsys_st_code=NM&tsasampl_is_number=1004559&tsasampl_st_code=NM&history=1&counter=0" title=2026010987>2026010987
+</td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">
+            05-04-2026
+            </td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">SP203080251 </td>
+	<td width="25%" bgcolor="#DBDBDB">
+
+
+
+INDUSTRIAL TREATMENT PLANT
+
+
+
+</td>
+	<td width="30%" bgcolor="#DBDBDB">SCIENTIFIC LABORATORY DIVISION</td>	
+      </tr>
+
+
+      <tr>
+	<td width="5%" bgcolor="#DBDBDB" align="center">RT</td>
+        <td width="20%" bgcolor="#DBDBDB" align="center">
+
+<a href="NonTcrSampleResults.jsp?tinwsys_is_number=100&tinwsys_st_code=NM&tsasampl_is_number=1004544&tsasampl_st_code=NM&history=1&counter=0" title=2026010992>2026010992
+</td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">
+            05-04-2026
+            </td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">SP203080251 </td>
+	<td width="25%" bgcolor="#DBDBDB">
+
+
+
+INDUSTRIAL TREATMENT PLANT
+
+
+
+</td>
+	<td width="30%" bgcolor="#DBDBDB">SCIENTIFIC LABORATORY DIVISION</td>	
+      </tr>
+
+
+      <tr>
+	<td width="5%" bgcolor="#DBDBDB" align="center">RT</td>
+        <td width="20%" bgcolor="#DBDBDB" align="center">
+
+<a href="NonTcrSampleResults.jsp?tinwsys_is_number=100&tinwsys_st_code=NM&tsasampl_is_number=1004545&tsasampl_st_code=NM&history=1&counter=0" title=2026010993>2026010993
+</td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">
+            05-04-2026
+            </td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">SP203080201 </td>
+	<td width="25%" bgcolor="#DBDBDB">
+
+
+
+5TH STREET TREATMENT PLANT
+
+
+
+</td>
+	<td width="30%" bgcolor="#DBDBDB">SCIENTIFIC LABORATORY DIVISION</td>	
+      </tr>
+
+
+      <tr>
+	<td width="5%" bgcolor="#DBDBDB" align="center">RT</td>
+        <td width="20%" bgcolor="#DBDBDB" align="center">
+
+<a href="NonTcrSampleResults.jsp?tinwsys_is_number=100&tinwsys_st_code=NM&tsasampl_is_number=1007546&tsasampl_st_code=NM&history=1&counter=0" title=2026010996>2026010996
+</td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">
+            05-04-2026
+            </td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">SP203080201 </td>
+	<td width="25%" bgcolor="#DBDBDB">
+
+
+
+5TH STREET TREATMENT PLANT
+
+
+
+</td>
+	<td width="30%" bgcolor="#DBDBDB">SCIENTIFIC LABORATORY DIVISION</td>	
+      </tr>
+
+
+      <tr>
+	<td width="5%" bgcolor="#DBDBDB" align="center">RT</td>
+        <td width="20%" bgcolor="#DBDBDB" align="center">
+
+<a href="NonTcrSampleResults.jsp?tinwsys_is_number=100&tinwsys_st_code=NM&tsasampl_is_number=1007547&tsasampl_st_code=NM&history=1&counter=0" title=2026010997>2026010997
+</td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">
+            05-04-2026
+            </td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">SP203080251 </td>
+	<td width="25%" bgcolor="#DBDBDB">
+
+
+
+INDUSTRIAL TREATMENT PLANT
+
+
+
+</td>
+	<td width="30%" bgcolor="#DBDBDB">SCIENTIFIC LABORATORY DIVISION</td>	
+      </tr>
+
+
+      <tr>
+	<td width="5%" bgcolor="#DBDBDB" align="center">RT</td>
+        <td width="20%" bgcolor="#DBDBDB" align="center">
+
+<a href="NonTcrSampleResults.jsp?tinwsys_is_number=100&tinwsys_st_code=NM&tsasampl_is_number=1007548&tsasampl_st_code=NM&history=1&counter=0" title=2026010998>2026010998
+</td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">
+            05-04-2026
+            </td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">SP203080211 </td>
+	<td width="25%" bgcolor="#DBDBDB">
+
+
+
+INDUSTRIAL WELL
+
+
+
+</td>
+	<td width="30%" bgcolor="#DBDBDB">SCIENTIFIC LABORATORY DIVISION</td>	
+      </tr>
+
+
+      <tr>
+	<td width="5%" bgcolor="#DBDBDB" align="center">RT</td>
+        <td width="20%" bgcolor="#DBDBDB" align="center">
+
+<a href="NonTcrSampleResults.jsp?tinwsys_is_number=100&tinwsys_st_code=NM&tsasampl_is_number=1003939&tsasampl_st_code=NM&history=1&counter=0" title=885-48947-1>885-48947-1
+</td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">
+            05-04-2026
+            </td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">SP203080251 </td>
+	<td width="25%" bgcolor="#DBDBDB">
+
+
+
+INDUSTRIAL TREATMENT PLANT
+
+
+
+</td>
+	<td width="30%" bgcolor="#DBDBDB">HALL ENVIRONMENTAL ANALYSIS LABORATORY</td>	
+      </tr>
+
+
+      <tr>
+	<td width="5%" bgcolor="#DBDBDB" align="center">RT</td>
+        <td width="20%" bgcolor="#DBDBDB" align="center">
+
+<a href="NonTcrSampleResults.jsp?tinwsys_is_number=100&tinwsys_st_code=NM&tsasampl_is_number=1003940&tsasampl_st_code=NM&history=1&counter=0" title=885-48948-1>885-48948-1
+</td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">
+            05-04-2026
+            </td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">SP203080201 </td>
+	<td width="25%" bgcolor="#DBDBDB">
+
+
+
+5TH STREET TREATMENT PLANT
+
+
+
+</td>
+	<td width="30%" bgcolor="#DBDBDB">HALL ENVIRONMENTAL ANALYSIS LABORATORY</td>	
+      </tr>
+
+
+      <tr>
+	<td width="5%" bgcolor="#DBDBDB" align="center">RT</td>
+        <td width="20%" bgcolor="#DBDBDB" align="center">
+
+<a href="NonTcrSampleResults.jsp?tinwsys_is_number=100&tinwsys_st_code=NM&tsasampl_is_number=1001237&tsasampl_st_code=NM&history=1&counter=0" title=2026007360>2026007360
+</td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">
+            03-24-2026
+            </td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">SP203080191 </td>
+	<td width="25%" bgcolor="#DBDBDB">
+
+
+
+JAYCEE PARK TREATMENT PLANT
+
+
+
+</td>
+	<td width="30%" bgcolor="#DBDBDB">SCIENTIFIC LABORATORY DIVISION</td>	
+      </tr>
+
+
+      <tr>
+	<td width="5%" bgcolor="#DBDBDB" align="center">RT</td>
+        <td width="20%" bgcolor="#DBDBDB" align="center">
+
+<a href="NonTcrSampleResults.jsp?tinwsys_is_number=100&tinwsys_st_code=NM&tsasampl_is_number=1001238&tsasampl_st_code=NM&history=1&counter=0" title=2026007361>2026007361
+</td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">
+            03-24-2026
+            </td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">SP203080231 </td>
+	<td width="25%" bgcolor="#DBDBDB">
+
+
+
+17 ACRES TREATMENT PLANT
+
+
+
+</td>
+	<td width="30%" bgcolor="#DBDBDB">SCIENTIFIC LABORATORY DIVISION</td>	
+      </tr>
+
+
+      <tr>
+	<td width="5%" bgcolor="#DBDBDB" align="center">RT</td>
+        <td width="20%" bgcolor="#DBDBDB" align="center">
+
+<a href="NonTcrSampleResults.jsp?tinwsys_is_number=100&tinwsys_st_code=NM&tsasampl_is_number=1000669&tsasampl_st_code=NM&history=1&counter=0" title=2026007362>2026007362
+</td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">
+            03-24-2026
+            </td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">SP203080191 </td>
+	<td width="25%" bgcolor="#DBDBDB">
+
+
+
+JAYCEE PARK TREATMENT PLANT
+
+
+
+</td>
+	<td width="30%" bgcolor="#DBDBDB">SCIENTIFIC LABORATORY DIVISION</td>	
+      </tr>
+
+
+      <tr>
+	<td width="5%" bgcolor="#DBDBDB" align="center">RT</td>
+        <td width="20%" bgcolor="#DBDBDB" align="center">
+
+<a href="NonTcrSampleResults.jsp?tinwsys_is_number=100&tinwsys_st_code=NM&tsasampl_is_number=1000670&tsasampl_st_code=NM&history=1&counter=0" title=2026007363>2026007363
+</td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">
+            03-24-2026
+            </td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">SP203080221 </td>
+	<td width="25%" bgcolor="#DBDBDB">
+
+
+
+LONESOME #2 NORTH TREATMENT PLANT
+
+
+
+</td>
+	<td width="30%" bgcolor="#DBDBDB">SCIENTIFIC LABORATORY DIVISION</td>	
+      </tr>
+
+
+      <tr>
+	<td width="5%" bgcolor="#DBDBDB" align="center">RT</td>
+        <td width="20%" bgcolor="#DBDBDB" align="center">
+
+<a href="NonTcrSampleResults.jsp?tinwsys_is_number=100&tinwsys_st_code=NM&tsasampl_is_number=1000671&tsasampl_st_code=NM&history=1&counter=0" title=2026007364>2026007364
+</td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">
+            03-24-2026
+            </td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">SP203080181 </td>
+	<td width="25%" bgcolor="#DBDBDB">
+
+
+
+LONESOME #1 SOUTH TREATMENT PLANT
+
+
+
+</td>
+	<td width="30%" bgcolor="#DBDBDB">SCIENTIFIC LABORATORY DIVISION</td>	
+      </tr>
+
+
+      <tr>
+	<td width="5%" bgcolor="#DBDBDB" align="center">RT</td>
+        <td width="20%" bgcolor="#DBDBDB" align="center">
+
+<a href="NonTcrSampleResults.jsp?tinwsys_is_number=100&tinwsys_st_code=NM&tsasampl_is_number=1000672&tsasampl_st_code=NM&history=1&counter=0" title=2026007365>2026007365
+</td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">
+            03-24-2026
+            </td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">SP203080231 </td>
+	<td width="25%" bgcolor="#DBDBDB">
+
+
+
+17 ACRES TREATMENT PLANT
+
+
+
+</td>
+	<td width="30%" bgcolor="#DBDBDB">SCIENTIFIC LABORATORY DIVISION</td>	
+      </tr>
+
+
+      <tr>
+	<td width="5%" bgcolor="#DBDBDB" align="center">RT</td>
+        <td width="20%" bgcolor="#DBDBDB" align="center">
+
+<a href="NonTcrSampleResults.jsp?tinwsys_is_number=100&tinwsys_st_code=NM&tsasampl_is_number=1003349&tsasampl_st_code=NM&history=1&counter=0" title=2026007367>2026007367
+</td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">
+            03-24-2026
+            </td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">SP203080231 </td>
+	<td width="25%" bgcolor="#DBDBDB">
+
+
+
+17 ACRES TREATMENT PLANT
+
+
+
+</td>
+	<td width="30%" bgcolor="#DBDBDB">SCIENTIFIC LABORATORY DIVISION</td>	
+      </tr>
+
+
+      <tr>
+	<td width="5%" bgcolor="#DBDBDB" align="center">RT</td>
+        <td width="20%" bgcolor="#DBDBDB" align="center">
+
+<a href="NonTcrSampleResults.jsp?tinwsys_is_number=100&tinwsys_st_code=NM&tsasampl_is_number=1003350&tsasampl_st_code=NM&history=1&counter=0" title=2026007368>2026007368
+</td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">
+            03-24-2026
+            </td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">SP203080181 </td>
+	<td width="25%" bgcolor="#DBDBDB">
+
+
+
+LONESOME #1 SOUTH TREATMENT PLANT
+
+
+
+</td>
+	<td width="30%" bgcolor="#DBDBDB">SCIENTIFIC LABORATORY DIVISION</td>	
+      </tr>
+
+
+      <tr>
+	<td width="5%" bgcolor="#DBDBDB" align="center">RT</td>
+        <td width="20%" bgcolor="#DBDBDB" align="center">
+
+<a href="NonTcrSampleResults.jsp?tinwsys_is_number=100&tinwsys_st_code=NM&tsasampl_is_number=1003351&tsasampl_st_code=NM&history=1&counter=0" title=2026007369>2026007369
+</td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">
+            03-24-2026
+            </td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">SP203080191 </td>
+	<td width="25%" bgcolor="#DBDBDB">
+
+
+
+JAYCEE PARK TREATMENT PLANT
+
+
+
+</td>
+	<td width="30%" bgcolor="#DBDBDB">SCIENTIFIC LABORATORY DIVISION</td>	
+      </tr>
+
+
+      <tr>
+	<td width="5%" bgcolor="#DBDBDB" align="center">RT</td>
+        <td width="20%" bgcolor="#DBDBDB" align="center">
+
+<a href="NonTcrSampleResults.jsp?tinwsys_is_number=100&tinwsys_st_code=NM&tsasampl_is_number=1003352&tsasampl_st_code=NM&history=1&counter=0" title=2026007370>2026007370
+</td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">
+            03-24-2026
+            </td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">SP203080221 </td>
+	<td width="25%" bgcolor="#DBDBDB">
+
+
+
+LONESOME #2 NORTH TREATMENT PLANT
+
+
+
+</td>
+	<td width="30%" bgcolor="#DBDBDB">SCIENTIFIC LABORATORY DIVISION</td>	
+      </tr>
+
+
+      <tr>
+	<td width="5%" bgcolor="#DBDBDB" align="center">RT</td>
+        <td width="20%" bgcolor="#DBDBDB" align="center">
+
+<a href="NonTcrSampleResults.jsp?tinwsys_is_number=100&tinwsys_st_code=NM&tsasampl_is_number=987399&tsasampl_st_code=NM&history=1&counter=0" title=2025033236>2025033236
+</td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">
+            11-18-2025
+            </td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">SP203080181 </td>
+	<td width="25%" bgcolor="#DBDBDB">
+
+
+
+LONESOME #1 SOUTH TREATMENT PLANT
+
+
+
+</td>
+	<td width="30%" bgcolor="#DBDBDB">SCIENTIFIC LABORATORY DIVISION</td>	
+      </tr>
+
+
+      <tr>
+	<td width="5%" bgcolor="#DBDBDB" align="center">RT</td>
+        <td width="20%" bgcolor="#DBDBDB" align="center">
+
+<a href="NonTcrSampleResults.jsp?tinwsys_is_number=100&tinwsys_st_code=NM&tsasampl_is_number=983256&tsasampl_st_code=NM&history=1&counter=0" title=2025028831>2025028831
+</td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">
+            10-07-2025
+            </td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">SP203080191 </td>
+	<td width="25%" bgcolor="#DBDBDB">
+
+
+
+JAYCEE PARK TREATMENT PLANT
+
+
+
+</td>
+	<td width="30%" bgcolor="#DBDBDB">SCIENTIFIC LABORATORY DIVISION</td>	
+      </tr>
+
+
+      <tr>
+	<td width="5%" bgcolor="#DBDBDB" align="center">RT</td>
+        <td width="20%" bgcolor="#DBDBDB" align="center">
+
+<a href="NonTcrSampleResults.jsp?tinwsys_is_number=100&tinwsys_st_code=NM&tsasampl_is_number=983257&tsasampl_st_code=NM&history=1&counter=0" title=2025028832>2025028832
+</td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">
+            10-07-2025
+            </td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">SP203080211 </td>
+	<td width="25%" bgcolor="#DBDBDB">
+
+
+
+INDUSTRIAL WELL
+
+
+
+</td>
+	<td width="30%" bgcolor="#DBDBDB">SCIENTIFIC LABORATORY DIVISION</td>	
+      </tr>
+
+
+      <tr>
+	<td width="5%" bgcolor="#DBDBDB" align="center">RT</td>
+        <td width="20%" bgcolor="#DBDBDB" align="center">
+
+<a href="NonTcrSampleResults.jsp?tinwsys_is_number=100&tinwsys_st_code=NM&tsasampl_is_number=983784&tsasampl_st_code=NM&history=1&counter=0" title=2025028833>2025028833
+</td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">
+            10-07-2025
+            </td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">SP203080201 </td>
+	<td width="25%" bgcolor="#DBDBDB">
+
+
+
+5TH STREET TREATMENT PLANT
+
+
+
+</td>
+	<td width="30%" bgcolor="#DBDBDB">SCIENTIFIC LABORATORY DIVISION</td>	
+      </tr>
+
+
+      <tr>
+	<td width="5%" bgcolor="#DBDBDB" align="center">RT</td>
+        <td width="20%" bgcolor="#DBDBDB" align="center">
+
+<a href="NonTcrSampleResults.jsp?tinwsys_is_number=100&tinwsys_st_code=NM&tsasampl_is_number=983785&tsasampl_st_code=NM&history=1&counter=0" title=2025028834>2025028834
+</td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">
+            10-07-2025
+            </td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">SP203080231 </td>
+	<td width="25%" bgcolor="#DBDBDB">
+
+
+
+17 ACRES TREATMENT PLANT
+
+
+
+</td>
+	<td width="30%" bgcolor="#DBDBDB">SCIENTIFIC LABORATORY DIVISION</td>	
+      </tr>
+
+
+      <tr>
+	<td width="5%" bgcolor="#DBDBDB" align="center">RT</td>
+        <td width="20%" bgcolor="#DBDBDB" align="center">
+
+<a href="NonTcrSampleResults.jsp?tinwsys_is_number=100&tinwsys_st_code=NM&tsasampl_is_number=983790&tsasampl_st_code=NM&history=1&counter=0" title=2025028840>2025028840
+</td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">
+            10-07-2025
+            </td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">SP203080251 </td>
+	<td width="25%" bgcolor="#DBDBDB">
+
+
+
+INDUSTRIAL TREATMENT PLANT
+
+
+
+</td>
+	<td width="30%" bgcolor="#DBDBDB">SCIENTIFIC LABORATORY DIVISION</td>	
+      </tr>
+
+
+      <tr>
+	<td width="5%" bgcolor="#DBDBDB" align="center">RT</td>
+        <td width="20%" bgcolor="#DBDBDB" align="center">
+
+<a href="NonTcrSampleResults.jsp?tinwsys_is_number=100&tinwsys_st_code=NM&tsasampl_is_number=983791&tsasampl_st_code=NM&history=1&counter=0" title=2025028841>2025028841
+</td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">
+            10-07-2025
+            </td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">SP203080221 </td>
+	<td width="25%" bgcolor="#DBDBDB">
+
+
+
+LONESOME #2 NORTH TREATMENT PLANT
+
+
+
+</td>
+	<td width="30%" bgcolor="#DBDBDB">SCIENTIFIC LABORATORY DIVISION</td>	
+      </tr>
+
+
+      <tr>
+	<td width="5%" bgcolor="#DBDBDB" align="center">RT</td>
+        <td width="20%" bgcolor="#DBDBDB" align="center">
+
+<a href="NonTcrSampleResults.jsp?tinwsys_is_number=100&tinwsys_st_code=NM&tsasampl_is_number=976566&tsasampl_st_code=NM&history=1&counter=0" title=885-30867-2>885-30867-2
+</td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">
+            08-11-2025
+            </td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">SP203080001 </td>
+	<td width="25%" bgcolor="#DBDBDB">
+
+
+
+DISTRIBUTION SYSTEM
+
+
+
+</td>
+	<td width="30%" bgcolor="#DBDBDB">HALL ENVIRONMENTAL ANALYSIS LABORATORY</td>	
+      </tr>
+
+
+      <tr>
+	<td width="5%" bgcolor="#DBDBDB" align="center">RT</td>
+        <td width="20%" bgcolor="#DBDBDB" align="center">
+
+<a href="NonTcrSampleResults.jsp?tinwsys_is_number=100&tinwsys_st_code=NM&tsasampl_is_number=976565&tsasampl_st_code=NM&history=1&counter=0" title=885-30867-1>885-30867-1
+</td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">
+            08-10-2025
+            </td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">SP203080001 </td>
+	<td width="25%" bgcolor="#DBDBDB">
+
+
+
+DISTRIBUTION SYSTEM
+
+
+
+</td>
+	<td width="30%" bgcolor="#DBDBDB">HALL ENVIRONMENTAL ANALYSIS LABORATORY</td>	
+      </tr>
+
+
+      <tr>
+	<td width="5%" bgcolor="#DBDBDB" align="center">RT</td>
+        <td width="20%" bgcolor="#DBDBDB" align="center">
+
+<a href="NonTcrSampleResults.jsp?tinwsys_is_number=100&tinwsys_st_code=NM&tsasampl_is_number=976382&tsasampl_st_code=NM&history=1&counter=0" title=885-30500-11>885-30500-11
+</td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">
+            08-05-2025
+            </td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">SP203080001 </td>
+	<td width="25%" bgcolor="#DBDBDB">
+
+
+
+DISTRIBUTION SYSTEM
+
+
+
+</td>
+	<td width="30%" bgcolor="#DBDBDB">HALL ENVIRONMENTAL ANALYSIS LABORATORY</td>	
+      </tr>
+
+
+      <tr>
+	<td width="5%" bgcolor="#DBDBDB" align="center">RT</td>
+        <td width="20%" bgcolor="#DBDBDB" align="center">
+
+<a href="NonTcrSampleResults.jsp?tinwsys_is_number=100&tinwsys_st_code=NM&tsasampl_is_number=976383&tsasampl_st_code=NM&history=1&counter=0" title=885-30500-12>885-30500-12
+</td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">
+            08-05-2025
+            </td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">SP203080001 </td>
+	<td width="25%" bgcolor="#DBDBDB">
+
+
+
+DISTRIBUTION SYSTEM
+
+
+
+</td>
+	<td width="30%" bgcolor="#DBDBDB">HALL ENVIRONMENTAL ANALYSIS LABORATORY</td>	
+      </tr>
+
+
+      <tr>
+	<td width="5%" bgcolor="#DBDBDB" align="center">RT</td>
+        <td width="20%" bgcolor="#DBDBDB" align="center">
+
+<a href="NonTcrSampleResults.jsp?tinwsys_is_number=100&tinwsys_st_code=NM&tsasampl_is_number=976384&tsasampl_st_code=NM&history=1&counter=0" title=885-30500-13>885-30500-13
+</td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">
+            08-05-2025
+            </td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">SP203080001 </td>
+	<td width="25%" bgcolor="#DBDBDB">
+
+
+
+DISTRIBUTION SYSTEM
+
+
+
+</td>
+	<td width="30%" bgcolor="#DBDBDB">HALL ENVIRONMENTAL ANALYSIS LABORATORY</td>	
+      </tr>
+
+
+      <tr>
+	<td width="5%" bgcolor="#DBDBDB" align="center">RT</td>
+        <td width="20%" bgcolor="#DBDBDB" align="center">
+
+<a href="NonTcrSampleResults.jsp?tinwsys_is_number=100&tinwsys_st_code=NM&tsasampl_is_number=976385&tsasampl_st_code=NM&history=1&counter=0" title=885-30500-14>885-30500-14
+</td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">
+            08-05-2025
+            </td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">SP203080001 </td>
+	<td width="25%" bgcolor="#DBDBDB">
+
+
+
+DISTRIBUTION SYSTEM
+
+
+
+</td>
+	<td width="30%" bgcolor="#DBDBDB">HALL ENVIRONMENTAL ANALYSIS LABORATORY</td>	
+      </tr>
+
+
+      <tr>
+	<td width="5%" bgcolor="#DBDBDB" align="center">RT</td>
+        <td width="20%" bgcolor="#DBDBDB" align="center">
+
+<a href="NonTcrSampleResults.jsp?tinwsys_is_number=100&tinwsys_st_code=NM&tsasampl_is_number=976386&tsasampl_st_code=NM&history=1&counter=0" title=885-30500-15>885-30500-15
+</td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">
+            08-05-2025
+            </td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">SP203080001 </td>
+	<td width="25%" bgcolor="#DBDBDB">
+
+
+
+DISTRIBUTION SYSTEM
+
+
+
+</td>
+	<td width="30%" bgcolor="#DBDBDB">HALL ENVIRONMENTAL ANALYSIS LABORATORY</td>	
+      </tr>
+
+
+      <tr>
+	<td width="5%" bgcolor="#DBDBDB" align="center">RT</td>
+        <td width="20%" bgcolor="#DBDBDB" align="center">
+
+<a href="NonTcrSampleResults.jsp?tinwsys_is_number=100&tinwsys_st_code=NM&tsasampl_is_number=976392&tsasampl_st_code=NM&history=1&counter=0" title=885-30500-20>885-30500-20
+</td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">
+            08-05-2025
+            </td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">SP203080001 </td>
+	<td width="25%" bgcolor="#DBDBDB">
+
+
+
+DISTRIBUTION SYSTEM
+
+
+
+</td>
+	<td width="30%" bgcolor="#DBDBDB">HALL ENVIRONMENTAL ANALYSIS LABORATORY</td>	
+      </tr>
+
+
+      <tr>
+	<td width="5%" bgcolor="#DBDBDB" align="center">RT</td>
+        <td width="20%" bgcolor="#DBDBDB" align="center">
+
+<a href="NonTcrSampleResults.jsp?tinwsys_is_number=100&tinwsys_st_code=NM&tsasampl_is_number=976393&tsasampl_st_code=NM&history=1&counter=0" title=885-30500-21>885-30500-21
+</td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">
+            08-05-2025
+            </td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">SP203080001 </td>
+	<td width="25%" bgcolor="#DBDBDB">
+
+
+
+DISTRIBUTION SYSTEM
+
+
+
+</td>
+	<td width="30%" bgcolor="#DBDBDB">HALL ENVIRONMENTAL ANALYSIS LABORATORY</td>	
+      </tr>
+
+
+      <tr>
+	<td width="5%" bgcolor="#DBDBDB" align="center">RT</td>
+        <td width="20%" bgcolor="#DBDBDB" align="center">
+
+<a href="NonTcrSampleResults.jsp?tinwsys_is_number=100&tinwsys_st_code=NM&tsasampl_is_number=976381&tsasampl_st_code=NM&history=1&counter=0" title=885-30500-10>885-30500-10
+</td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">
+            08-03-2025
+            </td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">SP203080001 </td>
+	<td width="25%" bgcolor="#DBDBDB">
+
+
+
+DISTRIBUTION SYSTEM
+
+
+
+</td>
+	<td width="30%" bgcolor="#DBDBDB">HALL ENVIRONMENTAL ANALYSIS LABORATORY</td>	
+      </tr>
+
+
+      <tr>
+	<td width="5%" bgcolor="#DBDBDB" align="center">RT</td>
+        <td width="20%" bgcolor="#DBDBDB" align="center">
+
+<a href="NonTcrSampleResults.jsp?tinwsys_is_number=100&tinwsys_st_code=NM&tsasampl_is_number=976401&tsasampl_st_code=NM&history=1&counter=0" title=885-30500-3>885-30500-3
+</td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">
+            08-01-2025
+            </td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">SP203080001 </td>
+	<td width="25%" bgcolor="#DBDBDB">
+
+
+
+DISTRIBUTION SYSTEM
+
+
+
+</td>
+	<td width="30%" bgcolor="#DBDBDB">HALL ENVIRONMENTAL ANALYSIS LABORATORY</td>	
+      </tr>
+
+
+      <tr>
+	<td width="5%" bgcolor="#DBDBDB" align="center">RT</td>
+        <td width="20%" bgcolor="#DBDBDB" align="center">
+
+<a href="NonTcrSampleResults.jsp?tinwsys_is_number=100&tinwsys_st_code=NM&tsasampl_is_number=976406&tsasampl_st_code=NM&history=1&counter=0" title=885-30500-8>885-30500-8
+</td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">
+            08-01-2025
+            </td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">SP203080001 </td>
+	<td width="25%" bgcolor="#DBDBDB">
+
+
+
+DISTRIBUTION SYSTEM
+
+
+
+</td>
+	<td width="30%" bgcolor="#DBDBDB">HALL ENVIRONMENTAL ANALYSIS LABORATORY</td>	
+      </tr>
+
+
+      <tr>
+	<td width="5%" bgcolor="#DBDBDB" align="center">RT</td>
+        <td width="20%" bgcolor="#DBDBDB" align="center">
+
+<a href="NonTcrSampleResults.jsp?tinwsys_is_number=100&tinwsys_st_code=NM&tsasampl_is_number=976380&tsasampl_st_code=NM&history=1&counter=0" title=885-30500-1>885-30500-1
+</td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">
+            07-31-2025
+            </td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">SP203080001 </td>
+	<td width="25%" bgcolor="#DBDBDB">
+
+
+
+DISTRIBUTION SYSTEM
+
+
+
+</td>
+	<td width="30%" bgcolor="#DBDBDB">HALL ENVIRONMENTAL ANALYSIS LABORATORY</td>	
+      </tr>
+
+
+      <tr>
+	<td width="5%" bgcolor="#DBDBDB" align="center">RT</td>
+        <td width="20%" bgcolor="#DBDBDB" align="center">
+
+<a href="NonTcrSampleResults.jsp?tinwsys_is_number=100&tinwsys_st_code=NM&tsasampl_is_number=976397&tsasampl_st_code=NM&history=1&counter=0" title=885-30500-25>885-30500-25
+</td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">
+            07-31-2025
+            </td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">SP203080001 </td>
+	<td width="25%" bgcolor="#DBDBDB">
+
+
+
+DISTRIBUTION SYSTEM
+
+
+
+</td>
+	<td width="30%" bgcolor="#DBDBDB">HALL ENVIRONMENTAL ANALYSIS LABORATORY</td>	
+      </tr>
+
+
+      <tr>
+	<td width="5%" bgcolor="#DBDBDB" align="center">RT</td>
+        <td width="20%" bgcolor="#DBDBDB" align="center">
+
+<a href="NonTcrSampleResults.jsp?tinwsys_is_number=100&tinwsys_st_code=NM&tsasampl_is_number=976398&tsasampl_st_code=NM&history=1&counter=0" title=885-30500-26>885-30500-26
+</td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">
+            07-31-2025
+            </td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">SP203080001 </td>
+	<td width="25%" bgcolor="#DBDBDB">
+
+
+
+DISTRIBUTION SYSTEM
+
+
+
+</td>
+	<td width="30%" bgcolor="#DBDBDB">HALL ENVIRONMENTAL ANALYSIS LABORATORY</td>	
+      </tr>
+
+
+      <tr>
+	<td width="5%" bgcolor="#DBDBDB" align="center">RT</td>
+        <td width="20%" bgcolor="#DBDBDB" align="center">
+
+<a href="NonTcrSampleResults.jsp?tinwsys_is_number=100&tinwsys_st_code=NM&tsasampl_is_number=976399&tsasampl_st_code=NM&history=1&counter=0" title=885-30500-27>885-30500-27
+</td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">
+            07-31-2025
+            </td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">SP203080001 </td>
+	<td width="25%" bgcolor="#DBDBDB">
+
+
+
+DISTRIBUTION SYSTEM
+
+
+
+</td>
+	<td width="30%" bgcolor="#DBDBDB">HALL ENVIRONMENTAL ANALYSIS LABORATORY</td>	
+      </tr>
+
+
+      <tr>
+	<td width="5%" bgcolor="#DBDBDB" align="center">RT</td>
+        <td width="20%" bgcolor="#DBDBDB" align="center">
+
+<a href="NonTcrSampleResults.jsp?tinwsys_is_number=100&tinwsys_st_code=NM&tsasampl_is_number=976407&tsasampl_st_code=NM&history=1&counter=0" title=885-30500-9>885-30500-9
+</td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">
+            07-31-2025
+            </td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">SP203080001 </td>
+	<td width="25%" bgcolor="#DBDBDB">
+
+
+
+DISTRIBUTION SYSTEM
+
+
+
+</td>
+	<td width="30%" bgcolor="#DBDBDB">HALL ENVIRONMENTAL ANALYSIS LABORATORY</td>	
+      </tr>
+
+
+      <tr>
+	<td width="5%" bgcolor="#DBDBDB" align="center">RT</td>
+        <td width="20%" bgcolor="#DBDBDB" align="center">
+
+<a href="NonTcrSampleResults.jsp?tinwsys_is_number=100&tinwsys_st_code=NM&tsasampl_is_number=976387&tsasampl_st_code=NM&history=1&counter=0" title=885-30500-16>885-30500-16
+</td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">
+            07-30-2025
+            </td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">SP203080001 </td>
+	<td width="25%" bgcolor="#DBDBDB">
+
+
+
+DISTRIBUTION SYSTEM
+
+
+
+</td>
+	<td width="30%" bgcolor="#DBDBDB">HALL ENVIRONMENTAL ANALYSIS LABORATORY</td>	
+      </tr>
+
+
+      <tr>
+	<td width="5%" bgcolor="#DBDBDB" align="center">RT</td>
+        <td width="20%" bgcolor="#DBDBDB" align="center">
+
+<a href="NonTcrSampleResults.jsp?tinwsys_is_number=100&tinwsys_st_code=NM&tsasampl_is_number=976391&tsasampl_st_code=NM&history=1&counter=0" title=885-30500-2>885-30500-2
+</td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">
+            07-30-2025
+            </td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">SP203080001 </td>
+	<td width="25%" bgcolor="#DBDBDB">
+
+
+
+DISTRIBUTION SYSTEM
+
+
+
+</td>
+	<td width="30%" bgcolor="#DBDBDB">HALL ENVIRONMENTAL ANALYSIS LABORATORY</td>	
+      </tr>
+
+
+      <tr>
+	<td width="5%" bgcolor="#DBDBDB" align="center">RT</td>
+        <td width="20%" bgcolor="#DBDBDB" align="center">
+
+<a href="NonTcrSampleResults.jsp?tinwsys_is_number=100&tinwsys_st_code=NM&tsasampl_is_number=976400&tsasampl_st_code=NM&history=1&counter=0" title=885-30500-28>885-30500-28
+</td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">
+            07-30-2025
+            </td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">SP203080001 </td>
+	<td width="25%" bgcolor="#DBDBDB">
+
+
+
+DISTRIBUTION SYSTEM
+
+
+
+</td>
+	<td width="30%" bgcolor="#DBDBDB">HALL ENVIRONMENTAL ANALYSIS LABORATORY</td>	
+      </tr>
+
+
+      <tr>
+	<td width="5%" bgcolor="#DBDBDB" align="center">RT</td>
+        <td width="20%" bgcolor="#DBDBDB" align="center">
+
+<a href="NonTcrSampleResults.jsp?tinwsys_is_number=100&tinwsys_st_code=NM&tsasampl_is_number=976402&tsasampl_st_code=NM&history=1&counter=0" title=885-30500-4>885-30500-4
+</td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">
+            07-30-2025
+            </td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">SP203080001 </td>
+	<td width="25%" bgcolor="#DBDBDB">
+
+
+
+DISTRIBUTION SYSTEM
+
+
+
+</td>
+	<td width="30%" bgcolor="#DBDBDB">HALL ENVIRONMENTAL ANALYSIS LABORATORY</td>	
+      </tr>
+
+
+      <tr>
+	<td width="5%" bgcolor="#DBDBDB" align="center">RT</td>
+        <td width="20%" bgcolor="#DBDBDB" align="center">
+
+<a href="NonTcrSampleResults.jsp?tinwsys_is_number=100&tinwsys_st_code=NM&tsasampl_is_number=976404&tsasampl_st_code=NM&history=1&counter=0" title=885-30500-6>885-30500-6
+</td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">
+            07-30-2025
+            </td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">SP203080001 </td>
+	<td width="25%" bgcolor="#DBDBDB">
+
+
+
+DISTRIBUTION SYSTEM
+
+
+
+</td>
+	<td width="30%" bgcolor="#DBDBDB">HALL ENVIRONMENTAL ANALYSIS LABORATORY</td>	
+      </tr>
+
+
+      <tr>
+	<td width="5%" bgcolor="#DBDBDB" align="center">RT</td>
+        <td width="20%" bgcolor="#DBDBDB" align="center">
+
+<a href="NonTcrSampleResults.jsp?tinwsys_is_number=100&tinwsys_st_code=NM&tsasampl_is_number=976405&tsasampl_st_code=NM&history=1&counter=0" title=885-30500-7>885-30500-7
+</td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">
+            07-30-2025
+            </td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">SP203080001 </td>
+	<td width="25%" bgcolor="#DBDBDB">
+
+
+
+DISTRIBUTION SYSTEM
+
+
+
+</td>
+	<td width="30%" bgcolor="#DBDBDB">HALL ENVIRONMENTAL ANALYSIS LABORATORY</td>	
+      </tr>
+
+
+      <tr>
+	<td width="5%" bgcolor="#DBDBDB" align="center">RT</td>
+        <td width="20%" bgcolor="#DBDBDB" align="center">
+
+<a href="NonTcrSampleResults.jsp?tinwsys_is_number=100&tinwsys_st_code=NM&tsasampl_is_number=976388&tsasampl_st_code=NM&history=1&counter=0" title=885-30500-17>885-30500-17
+</td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">
+            07-29-2025
+            </td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">SP203080001 </td>
+	<td width="25%" bgcolor="#DBDBDB">
+
+
+
+DISTRIBUTION SYSTEM
+
+
+
+</td>
+	<td width="30%" bgcolor="#DBDBDB">HALL ENVIRONMENTAL ANALYSIS LABORATORY</td>	
+      </tr>
+
+
+      <tr>
+	<td width="5%" bgcolor="#DBDBDB" align="center">RT</td>
+        <td width="20%" bgcolor="#DBDBDB" align="center">
+
+<a href="NonTcrSampleResults.jsp?tinwsys_is_number=100&tinwsys_st_code=NM&tsasampl_is_number=976389&tsasampl_st_code=NM&history=1&counter=0" title=885-30500-18>885-30500-18
+</td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">
+            07-29-2025
+            </td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">SP203080001 </td>
+	<td width="25%" bgcolor="#DBDBDB">
+
+
+
+DISTRIBUTION SYSTEM
+
+
+
+</td>
+	<td width="30%" bgcolor="#DBDBDB">HALL ENVIRONMENTAL ANALYSIS LABORATORY</td>	
+      </tr>
+
+
+      <tr>
+	<td width="5%" bgcolor="#DBDBDB" align="center">RT</td>
+        <td width="20%" bgcolor="#DBDBDB" align="center">
+
+<a href="NonTcrSampleResults.jsp?tinwsys_is_number=100&tinwsys_st_code=NM&tsasampl_is_number=976390&tsasampl_st_code=NM&history=1&counter=0" title=885-30500-19>885-30500-19
+</td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">
+            07-29-2025
+            </td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">SP203080001 </td>
+	<td width="25%" bgcolor="#DBDBDB">
+
+
+
+DISTRIBUTION SYSTEM
+
+
+
+</td>
+	<td width="30%" bgcolor="#DBDBDB">HALL ENVIRONMENTAL ANALYSIS LABORATORY</td>	
+      </tr>
+
+
+      <tr>
+	<td width="5%" bgcolor="#DBDBDB" align="center">RT</td>
+        <td width="20%" bgcolor="#DBDBDB" align="center">
+
+<a href="NonTcrSampleResults.jsp?tinwsys_is_number=100&tinwsys_st_code=NM&tsasampl_is_number=976394&tsasampl_st_code=NM&history=1&counter=0" title=885-30500-22>885-30500-22
+</td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">
+            07-29-2025
+            </td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">SP203080001 </td>
+	<td width="25%" bgcolor="#DBDBDB">
+
+
+
+DISTRIBUTION SYSTEM
+
+
+
+</td>
+	<td width="30%" bgcolor="#DBDBDB">HALL ENVIRONMENTAL ANALYSIS LABORATORY</td>	
+      </tr>
+
+
+      <tr>
+	<td width="5%" bgcolor="#DBDBDB" align="center">RT</td>
+        <td width="20%" bgcolor="#DBDBDB" align="center">
+
+<a href="NonTcrSampleResults.jsp?tinwsys_is_number=100&tinwsys_st_code=NM&tsasampl_is_number=976395&tsasampl_st_code=NM&history=1&counter=0" title=885-30500-23>885-30500-23
+</td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">
+            07-29-2025
+            </td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">SP203080001 </td>
+	<td width="25%" bgcolor="#DBDBDB">
+
+
+
+DISTRIBUTION SYSTEM
+
+
+
+</td>
+	<td width="30%" bgcolor="#DBDBDB">HALL ENVIRONMENTAL ANALYSIS LABORATORY</td>	
+      </tr>
+
+
+      <tr>
+	<td width="5%" bgcolor="#DBDBDB" align="center">RT</td>
+        <td width="20%" bgcolor="#DBDBDB" align="center">
+
+<a href="NonTcrSampleResults.jsp?tinwsys_is_number=100&tinwsys_st_code=NM&tsasampl_is_number=976396&tsasampl_st_code=NM&history=1&counter=0" title=885-30500-24>885-30500-24
+</td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">
+            07-29-2025
+            </td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">SP203080001 </td>
+	<td width="25%" bgcolor="#DBDBDB">
+
+
+
+DISTRIBUTION SYSTEM
+
+
+
+</td>
+	<td width="30%" bgcolor="#DBDBDB">HALL ENVIRONMENTAL ANALYSIS LABORATORY</td>	
+      </tr>
+
+
+      <tr>
+	<td width="5%" bgcolor="#DBDBDB" align="center">RT</td>
+        <td width="20%" bgcolor="#DBDBDB" align="center">
+
+<a href="NonTcrSampleResults.jsp?tinwsys_is_number=100&tinwsys_st_code=NM&tsasampl_is_number=976403&tsasampl_st_code=NM&history=1&counter=0" title=885-30500-5>885-30500-5
+</td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">
+            07-29-2025
+            </td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">SP203080001 </td>
+	<td width="25%" bgcolor="#DBDBDB">
+
+
+
+DISTRIBUTION SYSTEM
+
+
+
+</td>
+	<td width="30%" bgcolor="#DBDBDB">HALL ENVIRONMENTAL ANALYSIS LABORATORY</td>	
+      </tr>
+
+
+      <tr>
+	<td width="5%" bgcolor="#DBDBDB" align="center">RT</td>
+        <td width="20%" bgcolor="#DBDBDB" align="center">
+
+<a href="NonTcrSampleResults.jsp?tinwsys_is_number=100&tinwsys_st_code=NM&tsasampl_is_number=970893&tsasampl_st_code=NM&history=1&counter=0" title=885-28242-1>885-28242-1
+</td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">
+            07-07-2025
+            </td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">DBP-1       </td>
+	<td width="25%" bgcolor="#DBDBDB">
+
+
+
+1805 S. 27TH ST
+
+
+
+</td>
+	<td width="30%" bgcolor="#DBDBDB">HALL ENVIRONMENTAL ANALYSIS LABORATORY</td>	
+      </tr>
+
+
+      <tr>
+	<td width="5%" bgcolor="#DBDBDB" align="center">RT</td>
+        <td width="20%" bgcolor="#DBDBDB" align="center">
+
+<a href="NonTcrSampleResults.jsp?tinwsys_is_number=100&tinwsys_st_code=NM&tsasampl_is_number=970894&tsasampl_st_code=NM&history=1&counter=0" title=885-28244-1>885-28244-1
+</td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">
+            07-07-2025
+            </td>
+        <td width="10%" bgcolor="#DBDBDB" align="center">TTHM-1      </td>
+	<td width="25%" bgcolor="#DBDBDB">
+
+
+
+702 AIRPORT ROAD
+
+
+
+</td>
+	<td width="30%" bgcolor="#DBDBDB">HALL ENVIRONMENTAL ANALYSIS LABORATORY</td>	
+      </tr>
+
+    </table>
+
+    
+  </tr>
+</table>
+
+</body>
+
+</html>
