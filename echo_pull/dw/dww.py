@@ -362,7 +362,9 @@ def sample_results(result_url: str, sess=None) -> pd.DataFrame:
     if c_mcl:
         out["state_mcl_text"] = t[c_mcl]
     out["result_url"] = result_url
-    return out
+    # Some sites (CA) repeat result rows on the page, 2-4x. An identical repeat within one sample
+    # is never new information, and it inflated counts and downloads, so keep one.
+    return out.drop_duplicates().reset_index(drop=True)
 
 
 def all_results(base: str, sysid: dict, begin: date, max_samples: int = 400,

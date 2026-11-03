@@ -120,3 +120,14 @@ def test_kansas_public_access(monkeypatch):
                         {"tinwsys_is_number": "482", "tinwsys_st_code": "KS"},
                         pd.Timestamp("2025-01-01").date(), sess=dww._session())
     assert posts[0] == "https://dww.kdhe.ks.gov/DWW/Login" and len(s) > 0
+
+
+def test_repeated_rows_on_a_results_page_kept_once(monkeypatch):
+    """CA's results pages repeat rows (lead 4x, copper 3x in one Mountain House sample)."""
+    html = _read("ID_results.html")
+    i = html.lower().find("</tr>", html.lower().find("di(2-ethylhexyl)"))
+    j = html.lower().rfind("<tr", 0, i)
+    row = html[j:i + 5]
+    monkeypatch.setattr(dww, "_get", lambda *a, **k: html.replace(row, row * 3))
+    r = dww.sample_results("https://x/JSP/NonTcrSampleResults.jsp?tsasampl_is_number=1")
+    assert len(r) == 1
