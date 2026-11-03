@@ -1,7 +1,7 @@
-# Streamlit is pinned exactly: a version change ships new front-end files and open tabs then need
-# a hard refresh. Everything else uses minimum versions so Streamlit Cloud can pick builds that
-# match whichever Python version the app runs on.
-streamlit==1.66.1
+# Minimum versions only, so Streamlit Cloud can pick builds that match its Python (3.14 as of
+# Nov 2026). Pinning streamlit to an older release left the app spinning on 3.14. After a
+# Streamlit upgrade, an already-open tab may need one hard refresh (Ctrl+Shift+R).
+streamlit>=1.40
 pandas>=2.1
 numpy>=1.26
 plotly>=5.20
