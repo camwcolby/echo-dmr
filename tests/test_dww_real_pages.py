@@ -73,7 +73,7 @@ def test_wyoming_region_step(monkeypatch):
 
 
 def test_moved_states_are_labelled_not_attempted():
-    for st in ("LA", "MO", "MT", "GA"):
+    for st in ("LA", "MO", "MT", "GA", "RI"):
         assert st not in dww.STATES and st in dww.OTHER_PLATFORM
 
 
@@ -95,3 +95,28 @@ def test_dates_reposted_when_site_ignores_url_dates(monkeypatch):
                         pd.Timestamp("2018-01-01").date(), sess=dww._session())
     assert calls and calls[0]["begin_date"] == "01/01/2018"
     assert s["collected"].min() == pd.Timestamp("2019-03-01")
+
+
+def test_kansas_public_access(monkeypatch):
+    """KS sample pages sit behind a login screen with a 'Public Access' button."""
+    login, samples = _read("KS_login.html"), _read("NM_samples.html")
+    state = {"logged_in": False}
+    posts = []
+
+    class R:
+        status_code = 200
+        text = samples
+
+    def fake_post(self, url, data=None, timeout=None):
+        posts.append(url)
+        if url.endswith("/Login") and data.get("action") == "public":
+            state["logged_in"] = True
+        return R()
+
+    monkeypatch.setattr(dww.requests.Session, "post", fake_post)
+    monkeypatch.setattr(dww, "_get", lambda *a, **k: samples if state["logged_in"] else login)
+    assert dww._is_login_page(login) and not dww._is_login_page(samples)
+    s = dww.sample_list("https://dww.kdhe.ks.gov/DWW",
+                        {"tinwsys_is_number": "482", "tinwsys_st_code": "KS"},
+                        pd.Timestamp("2025-01-01").date(), sess=dww._session())
+    assert posts[0] == "https://dww.kdhe.ks.gov/DWW/Login" and len(s) > 0

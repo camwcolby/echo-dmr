@@ -194,7 +194,10 @@ def render():
                 try:
                     res, info = get_state(*req)
                 except Exception as e:  # noqa: BLE001
-                    st.error(f"The {pwsid[:2]} state site didn't cooperate: {str(e)[:250]}")
+                    note = dww.ACCESS_NOTES.get(pwsid[:2])
+                    st.error((f"{note}, so sample results can't be pulled from here. "
+                              "Federal data in the other sections still works.") if note else
+                             f"The {pwsid[:2]} state site didn't cooperate: {str(e)[:250]}")
                     res, info = pd.DataFrame(), {}
                 if info:
                     msg = (f"{info['samples_fetched']} of {info['samples_found']} samples read "

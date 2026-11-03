@@ -30,9 +30,9 @@ HEADERS = {
     "Accept-Language": "en-US,en;q=0.9",
 }
 
-# Candidates per state, first that answers wins. Checked with scripts/probe_states.py (Nov 2026):
-# working: AL CA DE IL KY MD NV OK SC VT; fixed after the probe: ID MS NE NM KS WY;
-# retried with browser headers / alternate entry pages: AK AZ NJ RI TN.
+# Candidates per state, first that answers wins. Checked live with scripts/probe_states.py (Nov 2026):
+# working: AL CA DE ID IL KY MD MS NE NM NV OK SC VT WY; KS needs the "Public Access" step;
+# AK AZ (403) and NJ TN (503) refuse automated requests even with browser headers.
 STATES: dict[str, list[str]] = {
     "AK": ["https://dec.alaska.gov/dww", "https://dec.alaska.gov/DWW"],
     "AL": ["http://dww.adem.alabama.gov/DWW"],
@@ -50,7 +50,6 @@ STATES: dict[str, list[str]] = {
     "NM": ["https://dww.water.env.nm.gov", "https://dww.water.net.env.nm.gov/NMDWW"],
     "NV": ["https://ndwis.ndep.nv.gov/DWW"],
     "OK": ["http://sdwis.deq.state.ok.us/DWW"],
-    "RI": ["https://dwq.health.ri.gov/DWW"],
     "SC": ["https://dww.des.sc.gov/DWW"],
     "TN": ["https://dataviewers.tdec.tn.gov/DWW"],
     "VT": ["https://anrnode.anr.state.vt.us/DWW"],
@@ -60,6 +59,7 @@ STATES: dict[str, list[str]] = {
 # Sites that need a step before searching (form POSTs that set a server-side session).
 INIT: dict[str, list[tuple[str, dict]]] = {
     "WY": [("select-dww-region", {"state_code": "WY"})],      # EPA Region 8: Wyoming vs tribes
+    "KS": [("Login", {"action": "public", "public": "Public Access"})],   # guest access button
 }
 
 # Not on Drinking Water Watch. Shown to the user instead of a failure.
@@ -71,8 +71,19 @@ OTHER_PLATFORM: dict[str, str] = {
     "VA": "Drinking Water Viewer (newer platform, not yet connected)",
     "WV": "Drinking Water Viewer (newer platform, not yet connected)",
     "TX": "Drinking Water Viewer (newer platform, not yet connected)",
+    "RI": "Drinking Water Viewer (newer platform, not yet connected)",
     "MT": "Montana's own PWS report tool (not yet connected)",
     "GA": "Georgia's site has an invalid security certificate, so it is not connected",
+}
+
+
+# States whose DWW site exists but refused automated access in Nov 2026 testing. Still tried,
+# but a failure gets this explanation instead of a raw HTTP error.
+ACCESS_NOTES: dict[str, str] = {
+    "AK": "Alaska's site blocks automated requests (HTTP 403)",
+    "AZ": "Arizona's site blocks automated requests (HTTP 403)",
+    "NJ": "New Jersey's site refused automated requests (HTTP 503)",
+    "TN": "Tennessee's site refused automated requests (HTTP 503)",
 }
 
 
@@ -179,6 +190,17 @@ def resolve_base(state: str, sess=None) -> str:
     raise DWWError(f"No working DWW site for {state}: " + " | ".join(errs[:4]))
 
 
+def _is_login_page(html: str) -> bool:
+    return 'value="Public Access"' in html or "name=\"public\"" in html
+
+
+def _public_login(sess, base: str) -> None:
+    """Click the 'Public Access' (guest) button some DWW sites put in front of sample pages."""
+    r = sess.post(f"{base}/Login", data={"action": "public", "public": "Public Access"}, timeout=30)
+    if r.status_code >= 400:
+        raise DWWError(f"Public Access step returned HTTP {r.status_code}")
+
+
 def open_state(state: str) -> tuple[requests.Session, str]:
     """A session that has done any site-specific setup, plus the working base URL.
     Use the same session for every later call: some sites keep state server-side."""
@@ -261,6 +283,9 @@ def _sample_list_once(base, sysid, begin, end, sess, max_pages, post: bool) -> p
             html = _get(sess, url)
         # the sample table is the one whose rows link to NonTcrSampleResults (header names vary:
         # "Collection Date & Time" in most states, "Date" in NM)
+        if _is_login_page(html):
+            _public_login(sess, base)
+            html = _get(sess, url)
         found = [t for t in tables(html, url)
                  if t["_links"].map(lambda ls: any("NonTcrSampleResults" in l for l in ls)).any()]
         if not found:
