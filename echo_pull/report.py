@@ -10,7 +10,8 @@ from . import analysis as A
 from . import qa
 
 MONTHS = dict(enumerate("Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split(), start=1))
-REPAIRS = ["load_mismatch", "rolling_mismatch", "rolling_filled", "load_mismatch_rough"]
+REPAIRS = ["load_mismatch", "rolling_mismatch", "rolling_filled", "load_mismatch_rough",
+           "impossible_value"]
 
 
 def run(df: pd.DataFrame, design_mgd: float | None = None, recent_months: int = 36) -> dict:

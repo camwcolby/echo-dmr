@@ -58,7 +58,14 @@ ECHO column names are mapped in `ALIASES` in `echo_pull/normalize.py`. A "missin
 prints what ECHO actually sent. The untouched download is kept in `data/raw/<permit>_raw.csv`.
 
 ## Web page (streamlit_app.py)
-Type an NPDES ID, download up to 10 years of raw ECHO DMR data as CSV.
+Type an NPDES ID; the page pulls up to 10 years from EPA ECHO and shows three sections:
+- **Flow & loads**: annual average flow, influent BOD load and influent TSS load (monthly dots,
+  annual line, table). Loads are influent monthly-average concentration x flow x 8.34.
+- **Permit limits**: one small chart per limit, riskiest first. The limit is drawn as the limit in
+  force each month, so seasonal limits and permit-renewal changes show where they applied, and are
+  spelled out under each chart. Toggle to "% of limit in force" to compare across parameters
+  (pH, DO and % removal stay in their own units). Filters for location and parameter.
+- **Download**: raw ECHO CSV, the cleaned CSV the charts use, and the annual loads table.
 
 Run on your own machine:  `streamlit run streamlit_app.py`  (opens in your browser)
 

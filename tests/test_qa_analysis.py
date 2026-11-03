@@ -94,3 +94,12 @@ def test_report_writes(df, tmp_path):
     assert any(f.startswith("CHECK REPORTING") for f in report.findings(R))
     out = report.write_xlsx(R, tmp_path / "x.xlsx")
     assert out.exists() and out.stat().st_size > 5000
+
+
+def test_impossible_percent_removal_blanked():
+    raw = synth.build().iloc[:0]
+    raw = pd.concat([raw, pd.DataFrame([synth._row("Percent Removal", "001", "81010",
+        "BOD, carbonaceous, percent removal", pd.Timestamp("2024-03-31"), "MO AV MN", "%",
+        1000.0, lim=85, qual=">=")])])
+    d = qa.apply(normalize.normalize(raw))
+    assert d.iloc[0].qa_flag == "impossible_value" and pd.isna(d.iloc[0].value_clean)

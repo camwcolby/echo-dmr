@@ -16,6 +16,7 @@ Checks, in priority order (a row gets the first flag that fires):
   rolling_mismatch     reported rolling-avg load off from the rolling mean of monthly loads by >2x
                        -> replaced with the rebuilt rolling mean
   rolling_filled       rolling-avg load missing but rebuildable from monthly loads -> filled
+  impossible_value     % removal over 100, or pH outside 0-14 -> blanked
   spike_vs_history     >10x the series' own 13-month median (review only, value kept; bacteria exempt)
   at_limit             value exactly equal to its limit (review only; often non-detects reported at
                        the limit, which makes headroom look tighter than it is)
@@ -130,6 +131,13 @@ def apply(df: pd.DataFrame) -> pd.DataFrame:
              "rolling_mismatch", new_value=rebuilt, expected=rebuilt)
         flag(roll_all & df["value"].isna() & rebuilt.notna(), "rolling_filled",
              new_value=rebuilt, expected=rebuilt)
+
+    # ---- 2b. physically impossible values -> blanked (e.g. 1000% removal, pH 70)
+    par = _s(df, "parameter")
+    imp = df["value"].notna() & (
+        (par.str.contains("removal", case=False) & (df["value"] > 100))
+        | (par.str.match(r"^pH\b") & ((df["value"] > 14) | (df["value"] < 0))))
+    flag(imp, "impossible_value", new_value=np.nan)
 
     # ---- 3. spikes vs the series' own history (review only)
     bact = _s(df, "parameter").str.contains(BACTERIA, case=False)
