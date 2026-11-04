@@ -62,6 +62,15 @@ def get_tn(pwsid: str, years: int, name: str):
     return res.reset_index(drop=True), info
 
 
+@st.cache_data(ttl=TTL, show_spinner=False, max_entries=200)
+def get_grades(pwsid: str) -> dict:
+    """Operator/plant grades from the state's system page; {} if the state doesn't list them."""
+    try:
+        return dww.system_grades(pwsid)
+    except Exception:  # noqa: BLE001  (header extra only)
+        return {}
+
+
 @st.cache_data(ttl=TTL, show_spinner=False, max_entries=100)
 def get_ucmr(pwsid: str):
     return ucmr.load_pws(pwsid)
@@ -148,6 +157,24 @@ def render():
 
     is_tn = pwsid[:2] == "TN"
     has_state = dww.supported(pwsid[:2]) or is_tn
+    o = federal.ownership(prof)
+    who = []
+    if o.get("owner"):
+        who.append(f"Owner: {o['owner']}")
+    contact = ", ".join(x for x in (o.get("contact"), o.get("org")) if x)
+    if contact:
+        who.append(f"Contact: {contact}")
+    who += [x for x in (o.get("phone"), o.get("email")) if x]
+    if dww.supported(pwsid[:2]):
+        with st.spinner("Checking the state's system page for operator grades..."):
+            grades = get_grades(pwsid)
+        if grades:
+            who.append("Required operator grade: " + ", ".join(
+                f"{v} ({k.replace(' Classification', '').replace('Max ', '').lower()})"
+                for k, v in grades.items()))
+    if who:
+        st.caption(" · ".join(who) + "  \nEPA doesn't record who operates the system (contract "
+                   "operator or certified operator in charge); this is the owner and contact on file.")
     sections = ["Violations", "Lead & copper",
                 "Sample results (state)" if has_state else "Sample results",
                 "PFAS (UCMR 5)", "Standards", "Download"]

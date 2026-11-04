@@ -7,6 +7,7 @@ Column names are lower-cased on the way in; every field is optional downstream.
 """
 from __future__ import annotations
 
+import re
 import time
 from urllib.parse import quote
 
@@ -81,6 +82,8 @@ PWS_TYPE = {"CWS": "Community", "NTNCWS": "Non-transient non-community",
 SOURCE = {"GW": "Groundwater", "SW": "Surface water", "GWP": "Purchased groundwater",
           "SWP": "Purchased surface water", "GU": "Groundwater under direct influence of SW",
           "GUP": "Purchased GWUDI"}
+OWNER = {"F": "Federal government", "L": "Local government", "M": "Public/private",
+         "N": "Native American", "P": "Private", "S": "State government"}
 VIOL_CATEGORY = {"MCL": "Maximum contaminant level", "MRDL": "Max residual disinfectant level",
                  "TT": "Treatment technique", "MR": "Monitoring & reporting",
                  "MON": "Monitoring", "RPT": "Reporting", "Other": "Other"}
@@ -185,3 +188,24 @@ def lead_copper(pwsid: str) -> pd.DataFrame:
     res["value_mg_l"] = [convert(v, u, "mg/L") if pd.notna(v) else v
                          for v, u in zip(res["value"], unit)]
     return res.dropna(subset=["date"]).sort_values("date").reset_index(drop=True)
+
+
+def ownership(prof: dict) -> dict:
+    """Owner type and the administrative contact EPA holds for a system (SDWIS WATER_SYSTEM).
+
+    SDWIS has no certified-operator or contract-operator field.
+    """
+    if not prof:
+        return {}
+    def g(k):
+        v = prof.get(k)
+        return None if v is None or (isinstance(v, float) and pd.isna(v)) or str(v).strip() == "" \
+            else str(v).strip()
+    phone = g("phone_number")
+    if phone and re.fullmatch(r"\d{10}", phone):
+        phone = f"({phone[:3]}) {phone[3:6]}-{phone[6:]}"
+    addr = ", ".join(x for x in (g("address_line1"), g("city_name"),
+                                 " ".join(y for y in (g("state_code"), g("zip_code")) if y)) if x)
+    return {"owner": OWNER.get(str(g("owner_type_code") or ""), g("owner_type_code")),
+            "org": g("org_name"), "contact": g("admin_name"), "phone": phone,
+            "email": g("email_addr"), "address": addr or None}

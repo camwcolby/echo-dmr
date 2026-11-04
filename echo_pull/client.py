@@ -123,3 +123,73 @@ def fetch_dmr_history(npdes_id: str, years: int = 10, verbose: bool = True) -> p
     if not frames:
         return pd.DataFrame()
     return pd.concat(frames, ignore_index=True)
+
+
+# ---------------------------------------------------------------- permit / ownership details
+PERMIT_FIELDS = ["CWPName", "CWPCity", "CWPState", "PermitName", "CWPFacilityTypeIndicator",
+                 "CWPMajorMinorStatusFlag", "CWPTotalDesignFlowNmbr", "CWPActualAverageFlowNmbr",
+                 "CWPPermitStatusDesc", "CWPExpirationDate", "PermittingAgency"]
+
+
+# ECHO column numbers as of Nov 2026; looked up fresh from ECHO's metadata when possible.
+_QCOL_FALLBACK = "1,2,4,5,48,30,62,28,29,53,61,238"
+_qcols_cache: list[str] = []
+
+
+def _qcolumns() -> str:
+    if not _qcols_cache:
+        try:
+            cols = _get(f"{BASE}/cwa_rest_services.metadata", {"output": "JSON"}, retries=1,
+                        timeout=30).json()["Results"]["ResultColumns"]
+            ids = {c["ObjectName"]: str(c["ColumnID"]) for c in cols}
+            _qcols_cache.append(",".join(ids[k] for k in ["SourceID", *PERMIT_FIELDS] if k in ids))
+        except Exception:  # noqa: BLE001
+            return _QCOL_FALLBACK
+    return _qcols_cache[0]
+
+
+def permit_info(npdes_id: str) -> dict:
+    """Who holds the permit and what kind of permit it is, from ECHO's CWA facility search.
+
+    ECHO has no contract-operator or certified-operator field; 'PermitName' is the permittee as
+    EPA records it (often the city, sometimes just the plant name again).
+    """
+    r = _get(CWA_FACILITIES, {"output": "JSON", "p_pid": npdes_id, "responseset": 1},
+             retries=1, timeout=30).json().get("Results", {})
+    qid = r.get("QueryID")
+    if not qid:
+        return {}
+    facs = _get(CWA_QID, {"output": "JSON", "qid": qid, "pageno": 1, "qcolumns": _qcolumns()},
+                retries=1, timeout=30).json().get("Results", {}).get("Facilities", [])
+    f = next((x for x in facs if str(x.get("SourceID", "")).upper() == npdes_id.upper()),
+             facs[0] if facs else None)
+    return {k: f.get(k) for k in PERMIT_FIELDS} if f else {}
+
+
+def permit_summary(info: dict) -> list[str]:
+    """Short phrases for the page header."""
+    if not info:
+        return []
+    out = []
+    if info.get("PermitName"):
+        out.append(f"Permit holder: {info['PermitName']}")
+    kind = info.get("CWPFacilityTypeIndicator")
+    mm = {"M": "major", "N": "minor"}.get(str(info.get("CWPMajorMinorStatusFlag") or ""), "")
+    if kind or mm:
+        out.append(" ".join(x for x in (kind, mm) if x))
+    def _f(v):
+        v = pd.to_numeric(v, errors="coerce")
+        return None if pd.isna(v) else f"{v:g}"
+    d, a = _f(info.get("CWPTotalDesignFlowNmbr")), _f(info.get("CWPActualAverageFlowNmbr"))
+    if d:
+        out.append(f"design {d} MGD" + (f" (actual avg {a})" if a else ""))
+    st, exp = info.get("CWPPermitStatusDesc"), pd.to_datetime(info.get("CWPExpirationDate"),
+                                                               format="%m/%d/%Y", errors="coerce")
+    if st or pd.notna(exp):
+        s = f"permit {str(st or '').lower()}".strip()
+        if pd.notna(exp):
+            s += f", {'expired' if exp < pd.Timestamp.today() else 'expires'} {exp:%b %Y}"
+        if info.get("PermittingAgency"):
+            s += f" ({info['PermittingAgency']})"
+        out.append(s)
+    return out

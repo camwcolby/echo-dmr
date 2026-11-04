@@ -22,20 +22,16 @@ def fetch_year(npdes_id: str, year: int, _cache_day: str) -> pd.DataFrame:
 
 
 @st.cache_data(ttl=7 * 24 * 3600, show_spinner=False, max_entries=500)
-def facility_name(npdes_id: str) -> str | None:
+def permit_info(npdes_id: str) -> dict:
     try:
-        r = client._get(client.CWA_FACILITIES, {"output": "JSON", "p_pid": npdes_id,
-                                                "responseset": 1}, retries=1, timeout=30)
-        qid = r.json().get("Results", {}).get("QueryID")
-        if not qid:
-            return None
-        f = client._get(client.CWA_QID, {"output": "JSON", "qid": qid, "pageno": 1},
-                        retries=1, timeout=30).json()
-        facs = f.get("Results", {}).get("Facilities", [])
-        return f"{facs[0].get('CWPName')}, {facs[0].get('CWPCity')}, {facs[0].get('CWPState')}" \
-            if facs else None
-    except Exception:
-        return None
+        return client.permit_info(npdes_id)
+    except Exception:  # noqa: BLE001  (header extras only; never block the pull)
+        return {}
+
+
+def facility_name(npdes_id: str) -> str | None:
+    f = permit_info(npdes_id)
+    return ", ".join(x for x in (f.get("CWPName"), f.get("CWPCity"), f.get("CWPState")) if x) or None
 
 
 @st.cache_data(show_spinner=False, max_entries=20)
@@ -120,6 +116,10 @@ def render():
              f"{int(df['is_violation_echo'].sum())} numeric violations on ECHO's record · "
              f"{int(df['qa_flag'].isin(['load_mismatch', 'rolling_mismatch', 'rolling_filled', 'impossible_value']).sum())} "
              "values repaired before charting (data-entry errors)")
+    who = client.permit_summary(permit_info(npdes))
+    if who:
+        st.caption(" · ".join(who) + "  \nEPA doesn't record who operates the plant (contract "
+                   "operator or certified operator in charge); the permit holder is the closest it has.")
     if failed:
         st.warning(f"EPA's service failed for {', '.join(map(str, failed))}, so those years are "
                    "missing. Click Get data again to fill them in.")

@@ -399,3 +399,26 @@ def all_results(base: str, sysid: dict, begin: date, max_samples: int = 400,
                         "sampling_point", "location") if c in samples]
     res = res.merge(samples[meta], on="result_url", how="left")
     return res, info
+
+
+_CLASS_RE = re.compile(r"([A-Za-z][A-Za-z /]{2,50}?Class(?:ification)?)\s*:\s*([A-Za-z]{0,3}[- ]?[0-9IVX]{1,4}[A-Za-z]?)\b")
+
+
+def classifications(html: str) -> dict:
+    """Operator/plant grade lines on a WaterSystemDetail page, e.g.
+    {'Distribution System Classification': 'D3', 'Max Treatment Plant Classification': 'T5'}.
+    Not every state fills these in; empty dict when the page doesn't list any."""
+    text = re.sub(r"\s+", " ", BeautifulSoup(html, "lxml").get_text(" "))
+    out = {}
+    for label, val in _CLASS_RE.findall(text):
+        label = re.sub(r"\s+", " ", label).strip()
+        if "type" in label.lower():          # 'Federal Type'-style codes aren't grades
+            continue
+        out.setdefault(label, val.strip())
+    return out
+
+
+def system_grades(pwsid: str) -> dict:
+    sess, base = open_state(pwsid[:2])
+    sysid = find_system(pwsid, base, sess)
+    return classifications(_get(sess, sysid["detail_url"]))
