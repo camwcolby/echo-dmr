@@ -14,6 +14,7 @@ from ..dw.viz_dw import ND_INK, _std_line
 from . import waterboards as W
 
 INFLUENT = "rgba(137,135,129,0.75)"     # influent recedes; effluent is the story
+FADED_BLUE = "rgba(42,120,214,0.38)"    # single stormwater results, behind the yearly averages
 
 
 def _scale(g: pd.DataFrame) -> dict:
@@ -133,6 +134,11 @@ NAL_NAME = {"tss": "TSS", "og": "Oil & grease", "ph": "pH", "cod": "COD", "bod":
             "nn": "Nitrate + nitrite N", "tp": "Total phosphorus"}
 
 
+def _margin_label(fig, y, text):
+    fig.add_annotation(x=1.01, xref="paper", y=y, text=text, showarrow=False, xanchor="left",
+                       align="left", font=dict(size=9, color=V.MUTED))
+
+
 def sw_panels(m: pd.DataFrame) -> list[str]:
     """NAL parameters this site sampled, required three (TSS, O&G, pH) first, then the rest by
     how far the worst annual average got past its NAL."""
@@ -168,42 +174,52 @@ def sw_panel(m: pd.DataFrame, key: str, x_range=None) -> go.Figure | None:
             text=nd["MONITORING_LOCATION_NAME"],
             hovertemplate="%{text} %{x|%b %d, %Y}: not detected (< %{y:.3~g} " + unit
                           + ")<extra></extra>"))
-    for mask, color, sym, nm in [(~over.loc[det.index], V.BLUE, "circle", "Result"),
+    dot = V.BLUE if ph else FADED_BLUE      # pH has no yearly average, so its results lead
+    for mask, color, sym, nm in [(~over.loc[det.index], dot, "circle", "Result"),
                                  (over.loc[det.index], V.CRITICAL, "diamond", "Past instantaneous NAL")]:
         if mask.any():
             fig.add_trace(go.Scatter(
                 x=det["date"][mask], y=det["v"][mask], mode="markers", name=nm,
-                marker=dict(size=7 if sym == "circle" else 10, color=color, symbol=sym,
-                            line=dict(width=1, color="rgba(252,252,251,0.9)")),
+                marker=dict(size=6 if sym == "circle" else 10, color=color, symbol=sym,
+                            line=dict(width=0 if sym == "circle" else 1, color="rgba(252,252,251,0.9)")),
                 text=det["MONITORING_LOCATION_NAME"][mask],
                 hovertemplate="%{text} %{x|%b %d, %Y}: %{y:.3~g} " + unit +
                               ("<br><b>Past the instantaneous NAL</b>" if sym == "diamond" else "")
                               + "<extra></extra>"))
     if not ph:
-        # reporting-year average drawn across that year's own samples (blue, thicker); the
-        # annual NAL applies to this average, not to single results
+        # reporting-year average (IGP year = Jul 1 - Jun 30) as a bold segment across the whole
+        # year, red when over the annual NAL, labeled with its value: the annual NAL applies to
+        # this average, so it's the mark that should read first; single results recede behind it
         for yr, h in g.groupby("REPORTING_YEAR"):
             a = h["v"].mean()
+            y0 = pd.Timestamp(year=int(yr), month=7, day=1)
+            over_a = a > n["annual"]
+            color = V.CRITICAL if over_a else V.BLUE
             fig.add_trace(go.Scatter(
-                x=[h["date"].min() - pd.Timedelta(days=10), h["date"].max() + pd.Timedelta(days=10)],
-                y=[a, a], mode="lines", line=dict(color=V.CRITICAL if a > n["annual"] else V.BLUE,
-                                                  width=3),
-                name="Reporting-year average",
-                hovertemplate=f"Reporting year {yr}: average {a:.3g} {unit} "
-                              f"({len(h)} results)<extra></extra>"))
-        _std_line(fig, n["annual"], f"annual NAL {V._fmt(n['annual'], unit)}")
+                x=[y0 + pd.Timedelta(days=15), y0 + pd.Timedelta(days=350)], y=[a, a],
+                mode="lines", line=dict(color=color, width=5), name="Reporting-year average",
+                hovertemplate=f"Reporting year {yr} (Jul {yr}-Jun {int(yr) + 1}): average "
+                              f"{a:.3g} {unit} from {len(h)} results"
+                              + (" <b>over the annual NAL</b>" if over_a else "") + "<extra></extra>"))
+            fig.add_annotation(x=y0 + pd.Timedelta(days=182), y=a, text=f"{a:.3g}", showarrow=False,
+                               yanchor="bottom", yshift=3, font=dict(size=9, color=color))
+        # NAL labels sit in the right margin, outside the data, so the yearly values never
+        # collide with them
+        fig.add_hline(y=n["annual"], line=dict(color=V.LIMIT, width=2))
+        _margin_label(fig, n["annual"], f"annual<br>NAL {V._fmt(n['annual'])}")
         if n.get("inst"):
             fig.add_hline(y=n["inst"], line=dict(color=V.LIMIT, width=1, dash="dot"))
-            fig.add_annotation(x=1, xref="paper", y=n["inst"], text=f"instantaneous NAL "
-                               f"{V._fmt(n['inst'], unit)}", showarrow=False, xanchor="right",
-                               yanchor="bottom", yshift=1, font=dict(size=10, color=V.MUTED))
+            _margin_label(fig, n["inst"], f"instant.<br>NAL {V._fmt(n['inst'])}")
         hi = max(g["v"].max(), n.get("inst") or n["annual"], n["annual"])
     else:
-        for lvl, lab in [(n["lo"], f"NAL range {n['lo']:g}"), (n["hi"], f"{n['hi']:g}")]:
-            _std_line(fig, lvl, lab)
+        for lvl in (n["lo"], n["hi"]):
+            fig.add_hline(y=lvl, line=dict(color=V.LIMIT, width=2))
+            _margin_label(fig, lvl, f"NAL {lvl:g}")
         hi = max(g["v"].max(), n["hi"]) + 0.5
     V._base_layout(fig, 220)
-    fig.update_yaxes(range=[(min(g["v"].min(), n["lo"]) - 0.5) if ph else 0, hi * (1 if ph else 1.1)])
+    fig.update_layout(margin=dict(r=58))
+    fig.update_yaxes(title=dict(text=unit, font=dict(size=10, color=V.MUTED)),
+                     range=[(min(g["v"].min(), n["lo"]) - 0.5) if ph else 0, hi * (1 if ph else 1.1)])
     if x_range:
         fig.update_xaxes(range=x_range)
     return fig

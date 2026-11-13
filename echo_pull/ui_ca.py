@@ -243,9 +243,10 @@ def stormwater(r: pd.Series, x_range):
         return
     keys = CV.sw_panels(m)
     st.caption("Numeric action levels (NALs) from the Industrial General Permit (Order "
-               "2014-0057-DWQ as amended). The annual NAL applies to each reporting year's average "
-               "(thick segments; red when over); the instantaneous NAL (dotted) to single TSS and "
-               "O&G results; pH to the 6.0-9.0 range. NALs trigger corrective-action levels, not "
+               "2014-0057-DWQ as amended). The annual NAL (solid orange) applies to each reporting "
+               "year's average: the bold segments, one per July-June year, labeled, red when over. "
+               "Faint dots are single results; the instantaneous NAL (dotted) applies to single TSS "
+               "and O&G results (red diamonds when past it); pH to the 6.0-9.0 range. NALs trigger corrective-action levels, not "
                "violations. Hollow: non-detect at its reporting level.")
     if not keys:
         st.info("This site's results don't include any parameter with a NAL.")
