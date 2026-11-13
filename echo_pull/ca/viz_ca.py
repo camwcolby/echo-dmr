@@ -134,9 +134,11 @@ NAL_NAME = {"tss": "TSS", "og": "Oil & grease", "ph": "pH", "cod": "COD", "bod":
             "nn": "Nitrate + nitrite N", "tp": "Total phosphorus"}
 
 
-def _margin_label(fig, y, text):
+def _margin_label(fig, y, text, where="middle"):
+    """Label in the right margin; where='top'/'bottom' sets it just above/below its line so two
+    close lines (O&G 15 and 25) don't overprint."""
     fig.add_annotation(x=1.01, xref="paper", y=y, text=text, showarrow=False, xanchor="left",
-                       align="left", font=dict(size=9, color=V.MUTED))
+                       align="left", yanchor=where, font=dict(size=9, color=V.MUTED))
 
 
 def sw_panels(m: pd.DataFrame) -> list[str]:
@@ -206,10 +208,11 @@ def sw_panel(m: pd.DataFrame, key: str, x_range=None) -> go.Figure | None:
         # NAL labels sit in the right margin, outside the data, so the yearly values never
         # collide with them
         fig.add_hline(y=n["annual"], line=dict(color=V.LIMIT, width=2))
-        _margin_label(fig, n["annual"], f"annual<br>NAL {V._fmt(n['annual'])}")
+        _margin_label(fig, n["annual"], f"annual<br>NAL {V._fmt(n['annual'])}",
+                      "top" if n.get("inst") else "middle")
         if n.get("inst"):
             fig.add_hline(y=n["inst"], line=dict(color=V.LIMIT, width=1, dash="dot"))
-            _margin_label(fig, n["inst"], f"instant.<br>NAL {V._fmt(n['inst'])}")
+            _margin_label(fig, n["inst"], f"instant.<br>NAL {V._fmt(n['inst'])}", "bottom")
         hi = max(g["v"].max(), n.get("inst") or n["annual"], n["annual"])
     else:
         for lvl in (n["lo"], n["hi"]):
