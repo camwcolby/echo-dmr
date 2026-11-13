@@ -128,11 +128,13 @@ def fetch_dmr_history(npdes_id: str, years: int = 10, verbose: bool = True) -> p
 # ---------------------------------------------------------------- permit / ownership details
 PERMIT_FIELDS = ["CWPName", "CWPCity", "CWPState", "PermitName", "CWPFacilityTypeIndicator",
                  "CWPMajorMinorStatusFlag", "CWPTotalDesignFlowNmbr", "CWPActualAverageFlowNmbr",
-                 "CWPPermitStatusDesc", "CWPExpirationDate", "PermittingAgency"]
+                 "CWPPermitStatusDesc", "CWPExpirationDate", "PermittingAgency",
+                 "RegistryID", "CWPPermitTypeDesc", "CWPSICDescs", "CWPEffectiveDate",
+                 "CWPStateWaterBodyName", "LastDMRValueRcvdDate"]
 
 
 # ECHO column numbers as of Nov 2026; looked up fresh from ECHO's metadata when possible.
-_QCOL_FALLBACK = "1,2,4,5,48,30,62,28,29,53,61,238"
+_QCOL_FALLBACK = "1,2,4,5,48,30,62,28,29,53,61,238"  # core fields only
 _qcols_cache: list[str] = []
 
 
@@ -193,3 +195,31 @@ def permit_summary(info: dict) -> list[str]:
             s += f" ({info['PermittingAgency']})"
         out.append(s)
     return out
+
+
+ECHO_DFR = "https://echo.epa.gov/detailed-facility-report?fid={}"
+
+
+def dfr_url(info: dict) -> str | None:
+    """ECHO's Detailed Facility Report, keyed by the facility's FRS registry ID."""
+    rid = str(info.get("RegistryID") or "").strip()
+    return ECHO_DFR.format(rid) if rid else None
+
+
+PERMIT_LABELS = {
+    "CWPName": "Facility", "PermitName": "Permit holder", "CWPPermitTypeDesc": "Permit type",
+    "CWPFacilityTypeIndicator": "Facility type", "CWPMajorMinorStatusFlag": "Major / minor",
+    "CWPSICDescs": "Industry (SIC)", "CWPTotalDesignFlowNmbr": "Design flow (MGD)",
+    "CWPActualAverageFlowNmbr": "Actual average flow (MGD)", "CWPPermitStatusDesc": "Permit status",
+    "CWPEffectiveDate": "Effective", "CWPExpirationDate": "Expires",
+    "PermittingAgency": "Permitting agency", "CWPStateWaterBodyName": "Receiving water",
+    "LastDMRValueRcvdDate": "Last DMR value received", "CWPCity": "City", "CWPState": "State"}
+
+
+def permit_table(info: dict) -> pd.DataFrame:
+    rows = [(lab, info.get(k)) for k, lab in PERMIT_LABELS.items()
+            if info.get(k) not in (None, "", "NA")]
+    fix = {"Major / minor": {"M": "Major", "N": "Minor"},
+           "Permitting agency": {"S": "State", "E": "U.S. EPA"}}
+    return pd.DataFrame([(a, fix.get(a, {}).get(str(b), str(b))) for a, b in rows],
+                        columns=["Field", "Value"])

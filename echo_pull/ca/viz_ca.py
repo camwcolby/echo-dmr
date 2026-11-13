@@ -1,0 +1,168 @@
+"""Charts for California Water Boards data: eSMR monitoring and industrial stormwater vs NALs.
+
+Same visual grammar as the rest of the app: blue = reported values, hollow grey = non-detect at
+its reporting level, orange = the reference line (here an IGP numeric action level; eSMR has no
+limits, so its charts have none), red diamond = a result past the reference.
+"""
+from __future__ import annotations
+
+import pandas as pd
+import plotly.graph_objects as go
+
+from .. import viz as V
+from ..dw.viz_dw import ND_INK, _std_line
+from . import waterboards as W
+
+INFLUENT = "rgba(137,135,129,0.75)"     # influent recedes; effluent is the story
+
+
+def esmr_panel(d: pd.DataFrame, row, x_range=None) -> go.Figure:
+    """One parameter: every measured result, effluent in blue, influent in grey, other
+    locations (receiving water, groundwater...) as small grey ticks."""
+    g = d[(d["parameter"] == row["parameter"]) & (d["units"].fillna("") == (row["units"] or ""))
+          & ~d["calculated"] & d["plot_value"].notna()].sort_values("date")
+    unit = row["units"] or ""
+    fig = go.Figure()
+    styles = {"Effluent": (V.BLUE, 6), "Influent": (INFLUENT, 5)}
+    for stream, h in g.groupby("stream"):
+        color, size = styles.get(stream, ("rgba(137,135,129,0.45)", 4))
+        det, nd = h[~h["nd"]], h[h["nd"]]
+        if not det.empty:
+            fig.add_trace(go.Scatter(
+                x=det["date"], y=det["plot_value"], mode="markers", name=stream,
+                marker=dict(size=size, color=color, line=dict(width=0)), text=det["location"],
+                hovertemplate=f"{stream} %{{text}}<br>%{{x|%b %d, %Y}}: %{{y:.4~g}} {unit}<extra></extra>"))
+        if not nd.empty:
+            fig.add_trace(go.Scatter(
+                x=nd["date"], y=nd["plot_value"], mode="markers", name=f"{stream} non-detect",
+                marker=dict(size=size, color="rgba(0,0,0,0)", line=dict(width=1, color=ND_INK)),
+                text=nd["location"],
+                hovertemplate=f"{stream} %{{text}}<br>%{{x|%b %d, %Y}}: not detected "
+                              f"(< %{{y:.4~g}} {unit})<extra></extra>"))
+    # effluent monthly median as a thin line: the level, without hiding the scatter
+    e = g[g["stream"] == "Effluent"]
+    if len(e) >= 12:
+        mm = e.set_index("date")["plot_value"].resample("MS").median().dropna()
+        fig.add_trace(go.Scatter(x=mm.index + pd.Timedelta(days=14), y=mm.values, mode="lines",
+                                 line=dict(color=V.BLUE, width=1.5), name="Effluent monthly median",
+                                 hovertemplate="%{x|%b %Y}: effluent median %{y:.4~g} "
+                                               + unit + "<extra></extra>"))
+    V._base_layout(fig, 220)
+    fig.update_yaxes(title=dict(text=unit, font=dict(size=10, color=V.MUTED)), rangemode="tozero")
+    if x_range:
+        fig.update_xaxes(range=x_range)
+    return fig
+
+
+def esmr_caption(d: pd.DataFrame, row) -> str:
+    g = d[(d["parameter"] == row["parameter"]) & ~d["calculated"]]
+    parts = []
+    for s in ("Influent", "Effluent"):
+        v = g.loc[(g["stream"] == s) & ~g["nd"], "plot_value"]
+        if len(v):
+            parts.append(f"{s.lower()} median {V._fmt(v.median(), row['units'] or '')} "
+                         f"(n={len(v)})")
+    other = sorted(set(g["stream"]) - {"Influent", "Effluent"})
+    if other:
+        parts.append("also " + ", ".join(o.lower() for o in other))
+    return " · ".join(parts)
+
+
+# ------------------------------------------------------------------ industrial stormwater
+NAL_NAME = {"tss": "TSS", "og": "Oil & grease", "ph": "pH", "cod": "COD", "bod": "BOD",
+            "nn": "Nitrate + nitrite N", "tp": "Total phosphorus"}
+
+
+def sw_panels(m: pd.DataFrame) -> list[str]:
+    """NAL parameters this site sampled, required three (TSS, O&G, pH) first, then the rest by
+    how far the worst annual average got past its NAL."""
+    t = W.nal_table(m)
+    if t.empty:
+        return []
+    t["ratio"] = t["average"] / t["annual_nal"]
+    worst = t.groupby("nal_key")["ratio"].max().fillna(0)
+    req = [k for k in ("tss", "og", "ph") if k in worst.index]
+    rest = [k for k in worst.sort_values(ascending=False).index if k not in req]
+    return req + rest
+
+
+def sw_panel(m: pd.DataFrame, key: str, x_range=None) -> go.Figure | None:
+    n = W.IGP_NAL[key]
+    g = m[m["nal_key"] == key].dropna(subset=["plot_value"]).sort_values("date").copy()
+    if g.empty:
+        return None
+    ph = key == "ph"
+    g["v"] = g["plot_value"] if ph else g["plot_value"] * g["to_mgl"]
+    g = g.dropna(subset=["v"])
+    unit = "SU" if ph else "mg/L"
+    if ph:
+        over = (g["v"] < n["lo"]) | (g["v"] > n["hi"])
+    else:
+        over = g["v"] > (n.get("inst") or float("inf"))
+    fig = go.Figure()
+    det, nd = g[~g["nd"]], g[g["nd"]]
+    if not nd.empty:
+        fig.add_trace(go.Scatter(
+            x=nd["date"], y=nd["v"], mode="markers", name="Non-detect",
+            marker=dict(size=6, color="rgba(0,0,0,0)", line=dict(width=1, color=ND_INK)),
+            text=nd["MONITORING_LOCATION_NAME"],
+            hovertemplate="%{text} %{x|%b %d, %Y}: not detected (< %{y:.3~g} " + unit
+                          + ")<extra></extra>"))
+    for mask, color, sym, nm in [(~over.loc[det.index], V.BLUE, "circle", "Result"),
+                                 (over.loc[det.index], V.CRITICAL, "diamond", "Past instantaneous NAL")]:
+        if mask.any():
+            fig.add_trace(go.Scatter(
+                x=det["date"][mask], y=det["v"][mask], mode="markers", name=nm,
+                marker=dict(size=7 if sym == "circle" else 10, color=color, symbol=sym,
+                            line=dict(width=1, color="rgba(252,252,251,0.9)")),
+                text=det["MONITORING_LOCATION_NAME"][mask],
+                hovertemplate="%{text} %{x|%b %d, %Y}: %{y:.3~g} " + unit +
+                              ("<br><b>Past the instantaneous NAL</b>" if sym == "diamond" else "")
+                              + "<extra></extra>"))
+    if not ph:
+        # reporting-year average drawn across that year's own samples (blue, thicker); the
+        # annual NAL applies to this average, not to single results
+        for yr, h in g.groupby("REPORTING_YEAR"):
+            a = h["v"].mean()
+            fig.add_trace(go.Scatter(
+                x=[h["date"].min() - pd.Timedelta(days=10), h["date"].max() + pd.Timedelta(days=10)],
+                y=[a, a], mode="lines", line=dict(color=V.CRITICAL if a > n["annual"] else V.BLUE,
+                                                  width=3),
+                name="Reporting-year average",
+                hovertemplate=f"Reporting year {yr}: average {a:.3g} {unit} "
+                              f"({len(h)} results)<extra></extra>"))
+        _std_line(fig, n["annual"], f"annual NAL {V._fmt(n['annual'], unit)}")
+        if n.get("inst"):
+            fig.add_hline(y=n["inst"], line=dict(color=V.LIMIT, width=1, dash="dot"))
+            fig.add_annotation(x=1, xref="paper", y=n["inst"], text=f"instantaneous NAL "
+                               f"{V._fmt(n['inst'], unit)}", showarrow=False, xanchor="right",
+                               yanchor="bottom", yshift=1, font=dict(size=10, color=V.MUTED))
+        hi = max(g["v"].max(), n.get("inst") or n["annual"], n["annual"])
+    else:
+        for lvl, lab in [(n["lo"], f"NAL range {n['lo']:g}"), (n["hi"], f"{n['hi']:g}")]:
+            _std_line(fig, lvl, lab)
+        hi = max(g["v"].max(), n["hi"]) + 0.5
+    V._base_layout(fig, 220)
+    fig.update_yaxes(range=[(min(g["v"].min(), n["lo"]) - 0.5) if ph else 0, hi * (1 if ph else 1.1)])
+    if x_range:
+        fig.update_xaxes(range=x_range)
+    return fig
+
+
+def sw_caption(m: pd.DataFrame, key: str) -> str:
+    t = W.nal_table(m)
+    t = t[t["nal_key"] == key]
+    if t.empty:
+        return ""
+    n = W.IGP_NAL[key]
+    if key == "ph":
+        hits = int(t["inst_hits"].sum())
+        return (f"{int(t['results'].sum())} results over {len(t)} reporting years · "
+                f"{hits} outside {n['lo']:g}-{n['hi']:g}")
+    over = t[t["over_annual"] == True]  # noqa: E712
+    s = (f"{int(t['results'].sum())} results over {len(t)} reporting years · annual average "
+         f"over the NAL in {len(over)} year{'s' if len(over) != 1 else ''}"
+         + (f" ({', '.join(str(int(y)) for y in over['year'])})" if len(over) else ""))
+    if n.get("inst"):
+        s += f" · {int(t['inst_hits'].sum())} results past the instantaneous NAL"
+    return s

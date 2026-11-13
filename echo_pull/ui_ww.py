@@ -73,6 +73,22 @@ def pull(npdes: str, years: int):
 
 
 
+def no_dmr_card(npdes: str, info: dict):
+    """ECHO knows the permit but has no DMRs: show what it does have, and where to look next."""
+    st.subheader(f"{npdes}: {info.get('CWPName') or ''}".rstrip(": "))
+    st.info("ECHO has this permit but no DMR data for the years requested. That's normal for MS4s, "
+            "stormwater and many general permits, which report through annual reports or the "
+            "state's own system rather than DMRs.")
+    st.dataframe(client.permit_table(info), hide_index=True, width="stretch")
+    url = client.dfr_url(info)
+    if url:
+        st.markdown(f"[Open ECHO's facility report for this site]({url}): inspections, "
+                    "enforcement and any other permits at the same facility.")
+    if npdes[:2] == "CA":
+        st.caption("California site? The California (WDR / stormwater) mode at the top looks it up in the state's "
+                   "own systems (WDRs, eSMR monitoring and industrial stormwater).")
+
+
 def render():
     # ------------------------------------------------------------------ header + form
     st.caption("Discharge Monitoring Report data for one NPDES permit, from EPA ECHO. Public data; "
@@ -91,11 +107,16 @@ def render():
             st.stop()
         raw, start, failed = pull(npdes_in, years_in)
         if raw is None:
-            msg = "ECHO returned no DMR data for that permit."
-            if failed:
-                msg += f" EPA's service also failed for {', '.join(map(str, failed))}; try again shortly."
-            st.error(msg + " Check the ID at https://echo.epa.gov/effluent-charts")
             st.session_state.pop("pulled", None)
+            info = permit_info(npdes_in)
+            if failed:
+                st.warning(f"EPA's service failed for {', '.join(map(str, failed))}; try again "
+                           "shortly, some data may be missing.")
+            if not info:
+                st.error("ECHO has no permit or DMR data under that ID. Check it at "
+                         "https://echo.epa.gov/facilities/facility-search")
+                st.stop()
+            no_dmr_card(npdes_in, info)
             st.stop()
         st.session_state["pulled"] = dict(npdes=npdes_in, raw=raw, start=start, failed=failed,
                                           name=facility_name(npdes_in), years=int(years_in))

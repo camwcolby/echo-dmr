@@ -96,3 +96,23 @@ Switch to **Drinking water (PWSID)** at the top of the app. Type a PWSID (or sea
    https://www.epa.gov/dwucmr/occurrence-data-unregulated-contaminant-monitoring-rule
 2. `python scripts/prep_ucmr.py "C:\Users\you\Downloads\ucmr5-occurrence-data.zip"`
 3. `git add data_static/ucmr5_slim.parquet`, commit, push. The web app picks it up on redeploy.
+
+## California (WDR / stormwater) mode
+Look up any California Water Boards site by WDID, order number, CA NPDES number or name, using
+the state's open data (data.ca.gov):
+- **Orders**: every WDR, NPDES, MS4 and other order at the site (status, effective and
+  review/expiration dates, design flow, threat/complexity) plus a link to the site's CIWQS
+  Facility At-a-Glance page (related parties, violations, enforcement, inspections).
+- **Monitoring (eSMR)**: electronic self-monitoring results, influent vs effluent. Most WDR-only
+  dischargers file PDFs instead, so many sites have none. eSMR carries no limits.
+- **Industrial stormwater**: SMARTS sampling results vs the Industrial General Permit's numeric
+  action levels (annual average and instantaneous). Construction stormwater is left out on purpose.
+
+ECHO has no DMRs for MS4s and most stormwater/general permits; the Wastewater mode now shows
+their permit details and a link to ECHO's facility report instead of an error.
+
+### eSMR history prep (re-run once or twice a year)
+The state's API scans a whole year's table per lookup, too slow for the app, so history for
+sites without an active NPDES permit is pre-built; the app fetches only the current year live.
+1. `python scripts/prep_esmr.py --since 2011` (20-30 minutes)
+2. `git add data_static/esmr_non_npdes.parquet`, commit, push.

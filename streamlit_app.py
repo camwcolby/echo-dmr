@@ -1,4 +1,4 @@
-"""ECHO explorer: wastewater (NPDES DMRs) and drinking water (PWSID).
+"""ECHO explorer: wastewater (NPDES DMRs), drinking water (PWSID) and California Water Boards.
 
 Run locally:   python -m streamlit run streamlit_app.py
 """
@@ -6,13 +6,16 @@ import streamlit as st
 
 st.set_page_config(page_title="Pursuit Compliance Recon", layout="wide")
 
-from echo_pull import ui_dw, ui_ww  # noqa: E402
+from echo_pull import ui_ca, ui_dw, ui_ww  # noqa: E402
 
 st.title("Pursuit Compliance Recon")
-mode = st.segmented_control("Mode", ["Wastewater (NPDES)", "Drinking water (PWSID)"],
+mode = st.segmented_control("Mode", ["Wastewater (NPDES)", "Drinking water (PWSID)",
+                                    "California (WDR / stormwater)"],
                             default="Wastewater (NPDES)", key="mode",
                             label_visibility="collapsed") or "Wastewater (NPDES)"
 if mode.startswith("Wastewater"):
     ui_ww.render()
+elif mode.startswith("California"):
+    ui_ca.render()
 else:
     ui_dw.render()
