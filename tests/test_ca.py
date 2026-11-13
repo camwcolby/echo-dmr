@@ -117,7 +117,7 @@ def _stream_df(inf, eff):
 
 
 def test_axis_log_when_influent_dwarfs_effluent():
-    s = CV._scale(_stream_df([250, 300, 280, 0], [10, 12, 15, 11]))
+    s = CV._scale(_stream_df([250, 300, 280] * 10 + [0], [10, 12, 15, 11] * 10))
     assert s["log"] and s["cap"] is None
 
 
