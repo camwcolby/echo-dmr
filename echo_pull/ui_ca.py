@@ -191,8 +191,10 @@ def show_facility(place_id: str, years: int):
     panels = W.esmr_panels(d)
     st.caption(f"{len(d):,} results, {d['date'].min():%b %Y} to {d['date'].max():%b %Y}. Blue: "
                "effluent. Grey: influent. Hollow: non-detect at its reporting level. Line: effluent "
-               "monthly median. eSMR carries results only, so there are no limit lines; WDR "
-               "limits are in the order.")
+               "monthly median, broken where months are missing. Where influent runs 8x+ above "
+               "effluent the axis is log; a few wild entries (likely typos) sit as triangles on "
+               "the top edge, true value on hover. eSMR carries results only, so there are no "
+               "limit lines; WDR limits are in the order.")
 
     def draw(r):
         st.markdown(f"**{r['parameter']}**")

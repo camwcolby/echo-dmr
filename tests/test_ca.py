@@ -108,3 +108,20 @@ def test_same_address_stormwater_match():
     sw = pd.DataFrame({"FACILITY_ADDRESS": ["8597 East Toews Ave", "40 North Market St", None],
                        "WDID": ["A", "B", "C"]})
     assert W.near_matches(fac, sw)["WDID"].tolist() == ["A"]
+
+
+def _stream_df(inf, eff):
+    rows = [dict(stream="Influent", plot_value=v, nd=False) for v in inf] + \
+           [dict(stream="Effluent", plot_value=v, nd=False) for v in eff]
+    return pd.DataFrame(rows)
+
+
+def test_axis_log_when_influent_dwarfs_effluent():
+    s = CV._scale(_stream_df([250, 300, 280, 0], [10, 12, 15, 11]))
+    assert s["log"] and s["cap"] is None
+
+
+def test_axis_capped_for_entry_errors_not_hidden():
+    eff = [0.3] * 200 + [291]                       # one 300 MGD slip at a 0.3 MGD plant
+    s = CV._scale(_stream_df([0.33] * 200, eff))
+    assert not s["log"] and s["cap"] < 1 and s["n_off"] == 1 and s["max"] == 291

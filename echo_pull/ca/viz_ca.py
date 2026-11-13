@@ -16,17 +16,54 @@ from . import waterboards as W
 INFLUENT = "rgba(137,135,129,0.75)"     # influent recedes; effluent is the story
 
 
+def _scale(g: pd.DataFrame) -> dict:
+    """Pick an honest y-axis for one parameter.
+
+    * Influent and effluent an order of magnitude apart (BOD, TSS): log axis, so both levels and
+      their changes stay readable on one panel instead of the effluent lying flat at zero.
+    * A few entries far above everything else (a 300 MGD 'flow' at a 0.5 MGD plant): cap the
+      axis just above the bulk of the data and pin those points to the top edge as triangles,
+      with their true values on hover and counted in the caption, so nothing is hidden.
+    """
+    v = g["plot_value"]
+    v = v[v.notna()]
+    out = {"log": False, "cap": None, "n_off": 0, "max": float(v.max()) if len(v) else None}
+    if v.empty:
+        return out
+    med = g[~g["nd"]].groupby("stream")["plot_value"].median()
+    if {"Influent", "Effluent"} <= set(med.index) and (v <= 0).mean() <= 0.05:
+        ratio = med["Influent"] / med["Effluent"] if med["Effluent"] > 0 else 0
+        if ratio >= 8 or (ratio and ratio <= 1 / 8):
+            out["log"] = True
+            return out
+    p99 = float(v.quantile(0.99))
+    if p99 > 0 and v.max() > 4 * p99:
+        out["cap"] = p99 * 1.3
+        out["n_off"] = int((v > out["cap"]).sum())
+    return out
+
+
 def esmr_panel(d: pd.DataFrame, row, x_range=None) -> go.Figure:
     """One parameter: every measured result, effluent in blue, influent in grey, other
     locations (receiving water, groundwater...) as small grey ticks."""
     g = d[(d["parameter"] == row["parameter"]) & (d["units"].fillna("") == (row["units"] or ""))
           & ~d["calculated"] & d["plot_value"].notna()].sort_values("date")
     unit = row["units"] or ""
+    sc = _scale(g)
+    cap = sc["cap"]
+    if sc["log"] and (g["plot_value"] <= 0).any():
+        # a log axis can't show zero: draw reported zeros at the bottom edge as hollow markers
+        g = g.copy()
+        floor = float(g.loc[g["plot_value"] > 0, "plot_value"].min())
+        z = g["plot_value"] <= 0
+        g.loc[z, "plot_value"] = floor
+        g.loc[z, "nd"] = True
     fig = go.Figure()
     styles = {"Effluent": (V.BLUE, 6), "Influent": (INFLUENT, 5)}
     for stream, h in g.groupby("stream"):
         color, size = styles.get(stream, ("rgba(137,135,129,0.45)", 4))
-        det, nd = h[~h["nd"]], h[h["nd"]]
+        off = h["plot_value"] > cap if cap else pd.Series(False, index=h.index)
+        det, nd = h[~h["nd"] & ~off], h[h["nd"] & ~off]
         if not det.empty:
             fig.add_trace(go.Scatter(
                 x=det["date"], y=det["plot_value"], mode="markers", name=stream,
@@ -39,16 +76,35 @@ def esmr_panel(d: pd.DataFrame, row, x_range=None) -> go.Figure:
                 text=nd["location"],
                 hovertemplate=f"{stream} %{{text}}<br>%{{x|%b %d, %Y}}: not detected "
                               f"(< %{{y:.4~g}} {unit})<extra></extra>"))
-    # effluent monthly median as a thin line: the level, without hiding the scatter
+        if off.any():
+            o = h[off]
+            fig.add_trace(go.Scatter(
+                x=o["date"], y=[cap] * len(o), mode="markers", name=f"{stream} off scale",
+                marker=dict(size=9, symbol="triangle-up", color=color), customdata=o["plot_value"],
+                text=o["location"],
+                hovertemplate=f"{stream} %{{text}}<br>%{{x|%b %d, %Y}}: %{{customdata:.4~g}} {unit}"
+                              "<br>off the scale shown (likely a data-entry error)<extra></extra>"))
+    # effluent monthly median as a thin line, broken where months are missing
     e = g[g["stream"] == "Effluent"]
+    if cap:
+        e = e[e["plot_value"] <= cap]
     if len(e) >= 12:
         mm = e.set_index("date")["plot_value"].resample("MS").median().dropna()
-        fig.add_trace(go.Scatter(x=mm.index + pd.Timedelta(days=14), y=mm.values, mode="lines",
-                                 line=dict(color=V.BLUE, width=1.5), name="Effluent monthly median",
+        xs, ys = V._gapped(list(mm.index + pd.Timedelta(days=14)), list(mm.values), 75)
+        fig.add_trace(go.Scatter(x=xs, y=ys, mode="lines", line=dict(color=V.BLUE, width=1.5),
+                                 name="Effluent monthly median", connectgaps=False,
                                  hovertemplate="%{x|%b %Y}: effluent median %{y:.4~g} "
                                                + unit + "<extra></extra>"))
     V._base_layout(fig, 220)
-    fig.update_yaxes(title=dict(text=unit, font=dict(size=10, color=V.MUTED)), rangemode="tozero")
+    ytitle = unit + (" (log scale)" if sc["log"] else "")
+    fig.update_yaxes(title=dict(text=ytitle, font=dict(size=10, color=V.MUTED)))
+    is_ph = str(row["parameter"]).strip().lower().startswith("ph")
+    if sc["log"]:
+        fig.update_yaxes(type="log")
+    elif cap:
+        fig.update_yaxes(range=[0, cap * 1.06])
+    elif not is_ph:
+        fig.update_yaxes(rangemode="tozero")
     if x_range:
         fig.update_xaxes(range=x_range)
     return fig
@@ -62,6 +118,10 @@ def esmr_caption(d: pd.DataFrame, row) -> str:
         if len(v):
             parts.append(f"{s.lower()} median {V._fmt(v.median(), row['units'] or '')} "
                          f"(n={len(v)})")
+    sc = _scale(g[g["plot_value"].notna() & (g["units"].fillna("") == (row["units"] or ""))])
+    if sc["n_off"]:
+        parts.append(f"{sc['n_off']} off-scale (max {V._fmt(sc['max'], row['units'] or '')}, "
+                     "likely data-entry errors)")
     other = sorted(set(g["stream"]) - {"Influent", "Effluent"})
     if other:
         parts.append("also " + ", ".join(o.lower() for o in other))
