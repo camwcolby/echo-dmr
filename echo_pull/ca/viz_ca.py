@@ -47,9 +47,9 @@ def _scale(g: pd.DataFrame) -> dict:
 def esmr_panel(d: pd.DataFrame, row, x_range=None) -> go.Figure:
     """One parameter: every measured result, effluent in blue, influent in grey, other
     locations (receiving water, groundwater...) as small grey ticks."""
-    g = d[(d["parameter"] == row["parameter"]) & (d["units"].fillna("") == (row["units"] or ""))
+    g = d[(d["parameter"] == row["parameter"]) & (d["units"].fillna("") == W._s(row["units"]))
           & ~d["calculated"] & d["plot_value"].notna()].sort_values("date")
-    unit = row["units"] or ""
+    unit = W._s(row["units"])
     sc = _scale(g)
     cap = sc["cap"]
     if sc["log"] and (g["plot_value"] <= 0).any():
@@ -117,11 +117,11 @@ def esmr_caption(d: pd.DataFrame, row) -> str:
     for s in ("Influent", "Effluent"):
         v = g.loc[(g["stream"] == s) & ~g["nd"], "plot_value"]
         if len(v):
-            parts.append(f"{s.lower()} median {V._fmt(v.median(), row['units'] or '')} "
+            parts.append(f"{s.lower()} median {V._fmt(v.median(), W._s(row['units']))} "
                          f"(n={len(v)})")
-    sc = _scale(g[g["plot_value"].notna() & (g["units"].fillna("") == (row["units"] or ""))])
+    sc = _scale(g[g["plot_value"].notna() & (g["units"].fillna("") == W._s(row["units"]))])
     if sc["n_off"]:
-        parts.append(f"{sc['n_off']} off-scale (max {V._fmt(sc['max'], row['units'] or '')}, "
+        parts.append(f"{sc['n_off']} off-scale (max {V._fmt(sc['max'], W._s(row['units']))}, "
                      "likely data-entry errors)")
     other = sorted(set(g["stream"]) - {"Influent", "Effluent"})
     if other:

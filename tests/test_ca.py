@@ -125,3 +125,13 @@ def test_axis_capped_for_entry_errors_not_hidden():
     eff = [0.3] * 200 + [291]                       # one 300 MGD slip at a 0.3 MGD plant
     s = CV._scale(_stream_df([0.33] * 200, eff))
     assert not s["log"] and s["cap"] < 1 and s["n_off"] == 1 and s["max"] == 291
+
+
+def test_same_address_match_with_arrow_text_and_blanks():
+    """Live data comes back as Arrow-backed text with blanks; that broke Malibu Civic Center."""
+    fac = pd.Series({"place_address": "24000 Civic Center Way"})
+    sw = pd.DataFrame({"FACILITY_ADDRESS": pd.array(["24000 Civic Center Way", "1 Main St", None],
+                                                    dtype="string[pyarrow]"),
+                       "WDID": ["A", "B", "C"]})
+    assert W.near_matches(fac, sw)["WDID"].tolist() == ["A"]
+    assert W.near_matches(pd.Series({"place_address": pd.NA}), sw).empty

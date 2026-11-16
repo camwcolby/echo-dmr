@@ -180,7 +180,7 @@ def _s(v) -> str:
 
 
 def order_summary(o: pd.Series) -> str:
-    bits = [PROGRAM.get(str(o.get("program_category")), str(o.get("program_category") or "")),
+    bits = [PROGRAM.get(str(o.get("program_category")), _s(o.get("program_category"))),
             f"order {o['order_number']}" if pd.notna(o.get("order_number")) else "",
             f"WDID {o['wdid']}" if pd.notna(o.get("wdid")) else "",
             f"NPDES {o['npdes_number_ca_number']}" if pd.notna(o.get("npdes_number_ca_number")) else ""]
@@ -317,7 +317,7 @@ _UNIT_TO_MGL = {"mg/l": 1.0, "ug/l": 1e-3, "µg/l": 1e-3, "ng/l": 1e-6}
 
 
 def nal_for(parameter: str) -> tuple[str, dict] | tuple[None, None]:
-    p = str(parameter or "").strip().lower()
+    p = _s(parameter).lower()
     if "dissolved" in p and not p.startswith("ph"):      # NALs are for total metals
         return None, None
     for k, v in IGP_NAL.items():
@@ -349,12 +349,15 @@ def industrial_facilities(text: str) -> pd.DataFrame:
 def near_matches(fac: pd.Series, sw: pd.DataFrame) -> pd.DataFrame:
     """Industrial stormwater sites at the same street address as a CIWQS facility."""
     def key(a):
-        m = re.match(r"\s*(\d+)\s+(\S+)", str(a or ""))
+        # street number + first street word, e.g. ('24000', 'civic'); blanks (None/NA) -> None
+        m = re.match(r"\s*(\d+)\s+(\S+)", _s(a))
         return (m.group(1), m.group(2).lower()) if m else None
     k = key(fac.get("place_address"))
     if k is None or sw.empty:
         return sw.iloc[0:0]
-    return sw[sw["FACILITY_ADDRESS"].apply(key) == k]
+    # compare row by row in plain Python: pandas can't compare a text column's values to a tuple
+    hit = [key(a) == k for a in sw["FACILITY_ADDRESS"]]
+    return sw[hit]
 
 
 def industrial_monitoring(wdid: str) -> pd.DataFrame:

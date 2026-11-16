@@ -154,7 +154,7 @@ def show_facility(place_id: str, years: int):
         q = str(f["facility_name"])
         with st.spinner("Looking for this site's industrial stormwater coverage..."):
             cand = sw_sites(q.split(" - ")[0][:40])
-            near = W.near_matches(f, sw_sites(str(f.get("place_city") or q)))
+            near = W.near_matches(f, sw_sites(W._s(f.get("place_city")) or q))
         found = pd.concat([near, cand]).drop_duplicates("WDID") if not near.empty or not cand.empty \
             else pd.DataFrame()
         if found.empty:
